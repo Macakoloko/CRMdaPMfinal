@@ -6,9 +6,9 @@ import { ExpenseForm } from "@/components/expense-form"
 import { FinancialReport } from "@/components/financial-report"
 import { FinancialStatus } from "@/components/financial-status"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
-export default function FinancialPage() {
+function FinancialPageContent() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState("income")
 
@@ -47,6 +47,14 @@ export default function FinancialPage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function FinancialPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <FinancialPageContent />
+    </Suspense>
   )
 }
 
