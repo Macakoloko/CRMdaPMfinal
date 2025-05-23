@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form, Modal, TimePicker, DatePicker, Input, Select } from 'antd';
+import QuickClientForm from './QuickClientForm';
+import QuickServiceForm from './QuickServiceForm';
 
 const NewAppointmentForm = ({ visible, onClose, onSave, clients, services }) => {
   const [form] = Form.useForm();
