@@ -1,0 +1,112 @@
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+
+/* Estilos personalizados para o calendário */
+.calendar-container {
+  height: 600px;
+  width: 100%;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.rbc-calendar {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.rbc-toolbar {
+  padding: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rbc-toolbar button {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-right: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #f7fafc;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #3182ce;
+  color: white;
+  border-color: #3182ce;
+}
+
+.rbc-event {
+  background-color: #3182ce;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.rbc-today {
+  background-color: #ebf8ff;
+}
+
+/* Estilos do calendário */
+.rbc-calendar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.rbc-toolbar {
+  padding: 8px 0;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rbc-toolbar-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.rbc-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.rbc-btn-group button {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-weight: 500;
+  padding: 8px 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rbc-btn-group button:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.rbc-btn-group button.rbc-active {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #111827;
+} 
