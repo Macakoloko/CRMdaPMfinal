@@ -72,6 +72,8 @@ import {
 } from "lucide-react"
 import { SupabaseClientStatus } from "@/components/supabase-client-status"
 import { useClients, Client } from "@/context/ClientContext"
+import { WhatsAppButton } from "@/components/whatsapp-button"
+import { ClientDetailsDialog } from "@/components/client-details-dialog"
 
 // Define the client form schema
 const clientFormSchema = z.object({
@@ -98,6 +100,8 @@ export default function ClientsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("all")
+  const [clientDetailsOpen, setClientDetailsOpen] = useState(false)
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
 
   // Initialize the form
   const form = useForm<ClientFormValues>({
@@ -234,6 +238,12 @@ export default function ClientsPage() {
     }
   }
 
+  // Abrir os detalhes do cliente
+  function handleViewClientDetails(clientId: string) {
+    setSelectedClientId(clientId)
+    setClientDetailsOpen(true)
+  }
+
   return (
     <div className="container mx-auto p-4 pb-20">
       <div className="flex justify-between items-center mb-6">
@@ -295,7 +305,10 @@ export default function ClientsPage() {
                     filteredClients.map((client) => (
                       <TableRow key={client.id}>
                         <TableCell>
-                          <div className="flex items-center gap-2">
+                          <div 
+                            className="flex items-center gap-2 cursor-pointer hover:text-primary hover:underline"
+                            onClick={() => handleViewClientDetails(client.id)}
+                          >
                             <Avatar className="h-8 w-8">
                               <AvatarFallback>{client.initials}</AvatarFallback>
                             </Avatar>
@@ -310,6 +323,12 @@ export default function ClientsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            {client.phone && (
+                              <WhatsAppButton 
+                                phoneNumber={client.phone} 
+                                message={`Olá ${client.name}, `}
+                              />
+                            )}
                             <Button 
                               size="icon" 
                               variant="ghost" 
@@ -584,11 +603,18 @@ export default function ClientsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Cliente Details Dialog */}
+      <ClientDetailsDialog
+        open={clientDetailsOpen}
+        onOpenChange={setClientDetailsOpen}
+        clientId={selectedClientId}
+      />
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Cliente</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
@@ -596,8 +622,8 @@ export default function ClientsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={confirmDeleteClient}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDeleteClient}
             >
               Excluir
             </AlertDialogAction>

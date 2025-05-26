@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Save, Loader2 } from "lucide-react"
+import { Save, Loader2, Database, Settings2, Clock, BellRing, Palette, Trash2, RefreshCw, Download, Upload, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 import * as z from "zod"
 
@@ -34,6 +34,18 @@ import { TimeInput } from "@/components/ui/time-input"
 import { ThemeSettings } from "@/components/theme-settings"
 import { SetupDatabase } from "@/components/setup-database"
 import { SetupProductsTable } from "@/components/setup-products-table"
+import { SupabaseStatus } from "@/components/supabase-status"
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 // Business information schema
 const businessSchema = z.object({
@@ -285,15 +297,85 @@ export default function SettingsPage() {
     domingo: "Domingo",
   }
 
-  return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">Gerencie as configurações do seu sistema</p>
-      </div>
+  // Função para limpar todos os dados do localStorage
+  const clearAllData = () => {
+    localStorage.clear();
+    toast.success("Todos os dados foram limpos com sucesso!");
+    // Redirecionar para recarregar a página
+    window.location.href = '/configuracoes';
+  };
+  
+  // Função para carregar dados de exemplo
+  const loadExampleData = () => {
+    // Automações de exemplo
+    const exampleAutomations = [
+      {
+        id: 1,
+        name: "Lembrete de Agendamento",
+        type: "reminder",
+        trigger: "before_appointment",
+        timeValue: "1",
+        timeUnit: "days",
+        active: true,
+        lastRun: new Date().toISOString(),
+        sentCount: 0,
+        messageTemplate: "Olá {nome}, lembre-se do seu agendamento amanhã! Estamos esperando por você."
+      },
+      {
+        id: 2,
+        name: "Agradecimento Pós-Atendimento",
+        type: "message",
+        trigger: "after_appointment",
+        timeValue: "2",
+        timeUnit: "hours",
+        active: true,
+        lastRun: new Date().toISOString(),
+        sentCount: 0,
+        messageTemplate: "Olá {nome}, obrigado por nos visitar hoje! Esperamos que tenha gostado do atendimento."
+      },
+      {
+        id: 3,
+        name: "Feliz Aniversário",
+        type: "message",
+        trigger: "birthday",
+        timeValue: "0",
+        timeUnit: "days",
+        active: true,
+        lastRun: new Date().toISOString(),
+        sentCount: 0,
+        messageTemplate: "Feliz aniversário, {nome}! Desejamos um dia maravilhoso e queremos celebrar com você oferecendo 10% de desconto em nossos serviços este mês."
+      }
+    ];
+    
+    // Configurações de automação de exemplo
+    const exampleAutomationSettings = {
+      birthdayEnabled: true,
+      birthdayMessage: "Feliz aniversário! 🎉 Como presente especial, oferecemos 15% de desconto em qualquer serviço este mês. Agende seu horário!",
+      followUpEnabled: true,
+      followUpDays: "7",
+      followUpMessage: "Olá! Esperamos que tenha gostado do nosso atendimento. Quando podemos te ver novamente? Agende seu próximo horário!",
+      feedbackEnabled: true,
+      feedbackMessage: "Olá! Gostaríamos de saber como foi sua experiência conosco. Poderia nos dar um feedback? Sua opinião é muito importante!"
+    };
+    
+    // Guardar dados de exemplo no localStorage
+    localStorage.setItem('automations', JSON.stringify(exampleAutomations));
+    localStorage.setItem('automationSettings', JSON.stringify(exampleAutomationSettings));
+    localStorage.setItem('businessInfo', JSON.stringify(mockBusinessData));
+    localStorage.setItem('workingHours', JSON.stringify(mockWorkingHours));
+    localStorage.setItem('notifications', JSON.stringify(mockNotifications));
+    
+    toast.success("Dados de exemplo carregados com sucesso!");
+    // Redirecionar para recarregar a página
+    window.location.href = '/configuracoes';
+  };
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+  return (
+    <div className="container mx-auto p-4 pb-24">
+      <h1 className="mb-6 text-2xl font-bold">Configurações</h1>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
           <TabsTrigger value="business">Empresa</TabsTrigger>
           <TabsTrigger value="hours">Horários</TabsTrigger>
           <TabsTrigger value="notifications">Notificações</TabsTrigger>
@@ -301,33 +383,31 @@ export default function SettingsPage() {
           <TabsTrigger value="database">Banco de Dados</TabsTrigger>
         </TabsList>
 
-        {/* Business Information */}
-        <TabsContent value="business">
-          <Card>
+        <TabsContent value="business" className="mt-0">
+          <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle>Informações da Empresa</CardTitle>
               <CardDescription>
-                Configure as informações básicas da sua empresa
+                Atualize as informações básicas do seu negócio
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...businessForm}>
-                <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} className="space-y-6">
-                  <FormField
-                    control={businessForm.control}
-                    name="nome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome da Empresa</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nome da empresa" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} id="business-form" className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={businessForm.control}
+                      name="nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Empresa</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nome da sua empresa" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={businessForm.control}
                       name="telefone"
@@ -335,13 +415,15 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Telefone</FormLabel>
                           <FormControl>
-                            <Input placeholder="Telefone" {...field} />
+                            <Input placeholder="+351 900 000 000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
 
+                  <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                       control={businessForm.control}
                       name="email"
@@ -349,59 +431,12 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="Email" {...field} />
+                            <Input placeholder="seu@email.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-
-                  <FormField
-                    control={businessForm.control}
-                    name="endereco"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Endereço</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Endereço" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField
-                      control={businessForm.control}
-                      name="cidade"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cidade</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Cidade" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={businessForm.control}
-                      name="codigoPostal"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Código Postal</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Código Postal" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                       control={businessForm.control}
                       name="website"
@@ -409,13 +444,57 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>Website</FormLabel>
                           <FormControl>
-                            <Input placeholder="Website (opcional)" {...field} />
+                            <Input placeholder="www.seusite.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
 
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <FormField
+                      control={businessForm.control}
+                      name="endereco"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Endereço</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Rua, número" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={businessForm.control}
+                      name="codigoPostal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Código Postal</FormLabel>
+                          <FormControl>
+                            <Input placeholder="0000-000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={businessForm.control}
+                      name="cidade"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cidade</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Sua cidade" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={businessForm.control}
                       name="nif"
@@ -423,7 +502,7 @@ export default function SettingsPage() {
                         <FormItem>
                           <FormLabel>NIF</FormLabel>
                           <FormControl>
-                            <Input placeholder="NIF" {...field} />
+                            <Input placeholder="Seu NIF" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -438,384 +517,444 @@ export default function SettingsPage() {
                       <FormItem>
                         <FormLabel>Descrição</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Descrição da empresa (opcional)"
-                            className="resize-none"
-                            {...field}
+                          <Textarea 
+                            placeholder="Descreva sua empresa" 
+                            className="resize-none" 
+                            {...field} 
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Salvar Alterações
-                  </Button>
                 </form>
               </Form>
             </CardContent>
+            <CardFooter className="flex justify-end space-x-2">
+              <Button 
+                type="submit" 
+                form="business-form"
+                disabled={isSubmitting}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Salvar Alterações
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
 
-        {/* Working Hours */}
         <TabsContent value="hours">
-          <Card>
+          <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle>Horário de Funcionamento</CardTitle>
               <CardDescription>
-                Configure os horários de funcionamento da sua empresa
+                Configure os horários de funcionamento do seu negócio
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...workingHoursForm}>
-                <form onSubmit={workingHoursForm.handleSubmit(onWorkingHoursSubmit)} className="space-y-6">
-                  <div className="space-y-4">
-                    {/* Segunda-feira */}
-                    <div className="rounded-md border p-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium">Segunda-feira</h3>
-                        <FormField
-                          control={workingHoursForm.control}
-                          name="segunda.aberto"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormLabel>Aberto</FormLabel>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
+                <form onSubmit={workingHoursForm.handleSubmit(onWorkingHoursSubmit)} id="hours-form" className="space-y-6">
+                  <div>
+                    <h3 className="mb-4 text-lg font-medium">Horários por Dia da Semana</h3>
+                    <div className="space-y-6">
+                      {['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'].map((day) => (
+                        <div key={day} className="rounded-lg border p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-medium capitalize">
+                              {day === 'segunda' ? 'Segunda-feira' : 
+                              day === 'terca' ? 'Terça-feira' : 
+                              day === 'quarta' ? 'Quarta-feira' : 
+                              day === 'quinta' ? 'Quinta-feira' : 
+                              day === 'sexta' ? 'Sexta-feira' : 
+                              day === 'sabado' ? 'Sábado' : 'Domingo'}
+                            </h4>
+                            <FormField
+                              control={workingHoursForm.control}
+                              name={`${day}.aberto` as any}
+                              render={({ field }) => (
+                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                  <FormLabel>Aberto</FormLabel>
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          {workingHoursForm.watch(`${day}.aberto` as any) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="grid grid-cols-2 gap-2">
+                                <FormField
+                                  control={workingHoursForm.control}
+                                  name={`${day}.abertura` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Abertura</FormLabel>
+                                      <FormControl>
+                                        <TimeInput 
+                                          value={field.value || ''} 
+                                          onChange={field.onChange}
+                                          placeholder="HH:MM"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
                                 />
-                              </FormControl>
-                            </FormItem>
+                                <FormField
+                                  control={workingHoursForm.control}
+                                  name={`${day}.fechamento` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Fechamento</FormLabel>
+                                      <FormControl>
+                                        <TimeInput 
+                                          value={field.value || ''} 
+                                          onChange={field.onChange}
+                                          placeholder="HH:MM"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <FormField
+                                  control={workingHoursForm.control}
+                                  name={`${day}.pausaInicio` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Início de Pausa</FormLabel>
+                                      <FormControl>
+                                        <TimeInput 
+                                          value={field.value || ''} 
+                                          onChange={field.onChange}
+                                          placeholder="HH:MM"
+                                        />
+                                      </FormControl>
+                                      <FormDescription className="text-xs">
+                                        Opcional
+                                      </FormDescription>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={workingHoursForm.control}
+                                  name={`${day}.pausaFim` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Fim de Pausa</FormLabel>
+                                      <FormControl>
+                                        <TimeInput 
+                                          value={field.value || ''} 
+                                          onChange={field.onChange}
+                                          placeholder="HH:MM"
+                                        />
+                                      </FormControl>
+                                      <FormDescription className="text-xs">
+                                        Opcional
+                                      </FormDescription>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
                           )}
-                        />
-                      </div>
-
-                      {workingHoursForm.watch("segunda.aberto") && (
-                        <div className="mt-4 grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <FormField
-                              control={workingHoursForm.control}
-                              name="segunda.abertura"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Abertura</FormLabel>
-                                  <FormControl>
-                                    <TimeInput
-                                      value={field.value || ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <FormField
-                              control={workingHoursForm.control}
-                              name="segunda.fechamento"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Fechamento</FormLabel>
-                                  <FormControl>
-                                    <TimeInput
-                                      value={field.value || ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <FormField
-                              control={workingHoursForm.control}
-                              name="segunda.pausaInicio"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Início da Pausa</FormLabel>
-                                  <FormControl>
-                                    <TimeInput
-                                      value={field.value || ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <FormField
-                              control={workingHoursForm.control}
-                              name="segunda.pausaFim"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Fim da Pausa</FormLabel>
-                                  <FormControl>
-                                    <TimeInput
-                                      value={field.value || ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Terça-feira */}
-                    {/* ... similar structure for other days ... */}
-
-                    {/* Intervalo de Agendamento */}
-                    <div className="rounded-md border p-4">
-                      <FormField
-                        control={workingHoursForm.control}
-                        name="intervaloAgendamento"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Intervalo de Agendamento (minutos)</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione o intervalo" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="15">15 minutos</SelectItem>
-                                <SelectItem value="30">30 minutos</SelectItem>
-                                <SelectItem value="45">45 minutos</SelectItem>
-                                <SelectItem value="60">60 minutos</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Define o intervalo mínimo entre agendamentos
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      ))}
                     </div>
                   </div>
-
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Salvar Alterações
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Notifications */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações de Notificações</CardTitle>
-              <CardDescription>
-                Configure como e quando as notificações serão enviadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...notificationsForm}>
-                <form onSubmit={notificationsForm.handleSubmit(onNotificationsSubmit)} className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="font-medium">Notificações de Confirmação</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormField
-                        control={notificationsForm.control}
-                        name="emailConfirmacao"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>Email de Confirmação</FormLabel>
-                              <FormDescription>
-                                Enviar email de confirmação ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={notificationsForm.control}
-                        name="smsConfirmacao"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>SMS de Confirmação</FormLabel>
-                              <FormDescription>
-                                Enviar SMS de confirmação ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    <h3 className="font-medium">Notificações de Lembrete</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormField
-                        control={notificationsForm.control}
-                        name="emailLembrete"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>Email de Lembrete</FormLabel>
-                              <FormDescription>
-                                Enviar email de lembrete ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={notificationsForm.control}
-                        name="smsLembrete"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>SMS de Lembrete</FormLabel>
-                              <FormDescription>
-                                Enviar SMS de lembrete ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
+                  
+                  <Separator />
+                  
+                  <div className="max-w-md">
+                    <h3 className="mb-4 text-lg font-medium">Configurações de Agendamento</h3>
                     <FormField
-                      control={notificationsForm.control}
-                      name="lembreteHoras"
+                      control={workingHoursForm.control}
+                      name="intervaloAgendamento"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tempo de Lembrete (horas)</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
+                          <FormLabel>Intervalo de Agendamento (minutos)</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione o tempo" />
+                                <SelectValue placeholder="Selecione um intervalo" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="12">12 horas antes</SelectItem>
-                              <SelectItem value="24">24 horas antes</SelectItem>
-                              <SelectItem value="48">48 horas antes</SelectItem>
+                              <SelectItem value="15">15 minutos</SelectItem>
+                              <SelectItem value="30">30 minutos</SelectItem>
+                              <SelectItem value="45">45 minutos</SelectItem>
+                              <SelectItem value="60">60 minutos</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormDescription>
-                            Quanto tempo antes do agendamento o lembrete será enviado
+                            Este é o intervalo mínimo entre agendamentos.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-
-                    <Separator className="my-4" />
-
-                    <h3 className="font-medium">Notificações de Cancelamento</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormField
-                        control={notificationsForm.control}
-                        name="emailCancelamento"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>Email de Cancelamento</FormLabel>
-                              <FormDescription>
-                                Enviar email de cancelamento ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={notificationsForm.control}
-                        name="smsCancelamento"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div>
-                              <FormLabel>SMS de Cancelamento</FormLabel>
-                              <FormDescription>
-                                Enviar SMS de cancelamento ao cliente
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
                   </div>
-
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Salvar Alterações
-                  </Button>
                 </form>
               </Form>
             </CardContent>
+            <CardFooter className="flex justify-end space-x-2">
+              <Button 
+                type="submit" 
+                form="hours-form"
+                disabled={isSubmitting}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Salvar Alterações
+              </Button>
+            </CardFooter>
           </Card>
         </TabsContent>
 
-        {/* Appearance */}
+        <TabsContent value="notifications">
+          <Card className="border-none shadow-md">
+            <CardHeader>
+              <CardTitle>Configurações de Notificações</CardTitle>
+              <CardDescription>
+                Gerencie como e quando as notificações são enviadas aos clientes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...notificationsForm}>
+                <form onSubmit={notificationsForm.handleSubmit(onNotificationsSubmit)} id="notifications-form" className="space-y-6">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="mb-4 text-lg font-medium">Confirmação de Agendamento</h3>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="emailConfirmacao"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Email de Confirmação</FormLabel>
+                                    <FormDescription>
+                                      Enviar email de confirmação após um novo agendamento
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="smsConfirmacao"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>SMS de Confirmação</FormLabel>
+                                    <FormDescription>
+                                      Enviar SMS de confirmação após um novo agendamento
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="mb-4 text-lg font-medium">Lembretes</h3>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="emailLembrete"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Email de Lembrete</FormLabel>
+                                    <FormDescription>
+                                      Enviar lembrete por email antes do agendamento
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="smsLembrete"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>SMS de Lembrete</FormLabel>
+                                    <FormDescription>
+                                      Enviar lembrete por SMS antes do agendamento
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <FormField
+                          control={notificationsForm.control}
+                          name="lembreteHoras"
+                          render={({ field }) => (
+                            <FormItem className="max-w-xs">
+                              <FormLabel>Tempo de Antecedência para Lembretes (horas)</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um tempo" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="2">2 horas antes</SelectItem>
+                                  <SelectItem value="6">6 horas antes</SelectItem>
+                                  <SelectItem value="12">12 horas antes</SelectItem>
+                                  <SelectItem value="24">24 horas antes</SelectItem>
+                                  <SelectItem value="48">48 horas antes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Quanto tempo antes enviar os lembretes.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="mb-4 text-lg font-medium">Cancelamentos</h3>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="emailCancelamento"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Email de Cancelamento</FormLabel>
+                                    <FormDescription>
+                                      Notificar por email quando um agendamento for cancelado
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="border bg-card/50">
+                          <CardContent className="pt-6">
+                            <FormField
+                              control={notificationsForm.control}
+                              name="smsCancelamento"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>SMS de Cancelamento</FormLabel>
+                                    <FormDescription>
+                                      Notificar por SMS quando um agendamento for cancelado
+                                    </FormDescription>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+            <CardFooter className="flex justify-end space-x-2">
+              <Button 
+                type="submit" 
+                form="notifications-form"
+                disabled={isSubmitting}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Salvar Alterações
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="appearance">
-          <Card>
+          <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle>Aparência</CardTitle>
               <CardDescription>
@@ -828,37 +967,166 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Database */}
         <TabsContent value="database">
+          <div className="grid gap-6">
+            <Card className="border-none shadow-md">
+              <CardHeader>
+                <CardTitle>Status do Banco de Dados</CardTitle>
+                <CardDescription>
+                  Verifique a conexão com o Supabase e o status das tabelas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SupabaseStatus />
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-md">
+              <CardHeader>
+                <CardTitle>Configuração do Banco de Dados</CardTitle>
+                <CardDescription>
+                  Ferramentas para configurar e manter o banco de dados
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <SetupDatabase />
+                <Separator />
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium">Configuração de Tabelas</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Configure tabelas específicas do sistema
+                    </p>
+                  </div>
+                  <SetupProductsTable />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Seção de gerenciamento de dados */}
+      <div className="mt-12">
+        <h2 className="text-xl font-bold mb-4">Gerenciamento de Dados</h2>
+        <Separator className="my-4" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card para limpar dados */}
           <Card>
             <CardHeader>
-              <CardTitle>Banco de Dados</CardTitle>
+              <CardTitle className="flex items-center">
+                <Trash2 className="mr-2 h-5 w-5 text-destructive" />
+                Limpar Dados
+              </CardTitle>
               <CardDescription>
-                Gerencie as configurações do banco de dados
+                Remove todos os dados armazenados localmente, incluindo automações, configurações e preferências.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
-              <div>
-                <h3 className="text-lg font-medium mb-4">Tabelas Financeiras</h3>
-                <SetupDatabase />
-              </div>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Esta ação irá limpar todos os dados armazenados no navegador. Esta ação não pode ser desfeita.
+              </p>
               
-              <Separator />
-              
-              <div>
-                <h3 className="text-lg font-medium mb-4">Tabela de Produtos</h3>
-                <SetupProductsTable />
-                
-                <div className="mt-4">
-                  <Button onClick={setupProductsTable} variant="outline">
-                    Configurar Tabela de Produtos Manualmente
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Limpar Todos os Dados
                   </Button>
-                </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center">
+                      <AlertTriangle className="mr-2 h-5 w-5 text-destructive" />
+                      Tem certeza?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação irá remover permanentemente todos os dados armazenados localmente, incluindo automações,
+                      configurações de empresa, horários e preferências. Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearAllData} className="bg-destructive text-destructive-foreground">
+                      Sim, limpar tudo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+          
+          {/* Card para carregar exemplos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Download className="mr-2 h-5 w-5 text-primary" />
+                Carregar Dados de Exemplo
+              </CardTitle>
+              <CardDescription>
+                Carrega dados de exemplo pré-configurados para automações, configurações e preferências.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Esta ação irá carregar dados de exemplo para ajudar você a visualizar como o sistema funciona. 
+                Quaisquer dados existentes serão substituídos.
+              </p>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" className="w-full">
+                    <Download className="mr-2 h-4 w-4" />
+                    Carregar Exemplos
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Carregar Dados de Exemplo</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação irá substituir quaisquer dados existentes por dados de exemplo pré-configurados.
+                      Deseja continuar?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={loadExampleData}>
+                      Sim, carregar exemplos
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Database className="mr-2 h-5 w-5" />
+                Exportar/Importar Dados
+              </CardTitle>
+              <CardDescription>
+                Faça backup dos seus dados ou restaure a partir de um arquivo de backup.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4">
+                <Button variant="outline" className="flex-1">
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar Dados
+                </Button>
+                <Button variant="outline" className="flex-1">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Importar Dados
+                </Button>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   )
 }

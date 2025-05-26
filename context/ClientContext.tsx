@@ -20,9 +20,21 @@ export interface Client {
   initials: string
   avatarUrl?: string
   status: "active" | "inactive"
+  attendance?: ClientAttendance[] // Histórico de comparecimento
 }
 
-// Service history interface
+// Interface para o histórico de comparecimento
+export interface ClientAttendance {
+  id: string
+  clientId: string
+  appointmentId: string
+  date: Date
+  attended: boolean
+  reason?: string
+  createdAt: Date
+}
+
+// Interface para serviços de cliente
 export interface ClientService {
   id: string
   clientId: string
@@ -30,6 +42,10 @@ export interface ClientService {
   serviceDate: Date
   notes?: string
   price: number
+  attended: boolean // Campo adicionado para rastrear comparecimento
+  paymentMethod?: "cash" | "card" | "transfer" | "other"
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 // Client context type
@@ -45,6 +61,9 @@ interface ClientContextType {
   updateClientService: (id: string, service: Partial<ClientService>) => Promise<void>
   deleteClientService: (id: string) => Promise<void>
   getClientServices: (clientId: string) => ClientService[]
+  addClientAttendance: (attendance: Omit<ClientAttendance, "id" | "createdAt">) => Promise<void>
+  updateClientAttendance: (id: string, attendance: Partial<ClientAttendance>) => Promise<void>
+  getClientAttendance: (clientId: string) => ClientAttendance[]
 }
 
 // Create the context
@@ -74,6 +93,7 @@ const generateInitials = (name: string): string => {
 export function ClientProvider({ children }: { children: React.ReactNode }) {
   const [clients, setClients] = useState<Client[]>([])
   const [clientServices, setClientServices] = useState<ClientService[]>([])
+  const [clientAttendance, setClientAttendance] = useState<ClientAttendance[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { supabase } = useSupabase()
 
@@ -135,7 +155,8 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
               notes: client.notes,
               initials: client.initials || generateInitials(client.name),
               avatarUrl: client.avatar_url,
-              status: client.status || "active"
+              status: client.status || "active",
+              attendance: client.attendance || []
             }))
             setClients(formattedClients)
             
@@ -200,7 +221,11 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
               serviceName: service.service_name,
               serviceDate: new Date(service.service_date),
               notes: service.notes,
-              price: service.price
+              price: service.price,
+              attended: service.attended,
+              paymentMethod: service.payment_method,
+              createdAt: service.created_at ? new Date(service.created_at) : undefined,
+              updatedAt: service.updated_at ? new Date(service.updated_at) : undefined
             }))
             setClientServices(formattedServices)
           } else {
@@ -242,7 +267,8 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
         ...clientData,
         id: crypto.randomUUID(),
         initials,
-        status: "active"
+        status: "active",
+        attendance: []
       }
       
       // Adicionar ao estado local primeiro para feedback imediato
@@ -262,7 +288,8 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
             address: newClient.address || null,
             notes: newClient.notes || null,
             initials: newClient.initials,
-            status: newClient.status
+            status: newClient.status,
+            attendance: newClient.attendance
           }).select()
           
           if (error) {
@@ -333,6 +360,7 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
           if (clientData.notes !== undefined) supabaseData.notes = clientData.notes || null
           if (clientData.status) supabaseData.status = clientData.status
           if (clientData.initials) supabaseData.initials = clientData.initials
+          if (clientData.attendance) supabaseData.attendance = clientData.attendance
           
           console.log("Atualizando cliente no Supabase:", id, supabaseData)
           
@@ -435,7 +463,11 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
         service_name: newService.serviceName,
         service_date: newService.serviceDate.toISOString(),
         notes: newService.notes,
-        price: newService.price
+        price: newService.price,
+        attended: newService.attended,
+        payment_method: newService.paymentMethod,
+        created_at: newService.createdAt ? newService.createdAt.toISOString() : null,
+        updated_at: newService.updatedAt ? newService.updatedAt.toISOString() : null
       })
       
       if (error) throw error
@@ -483,7 +515,11 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
           service_name: updatedService.serviceName,
           service_date: updatedService.serviceDate.toISOString(),
           notes: updatedService.notes,
-          price: updatedService.price
+          price: updatedService.price,
+          attended: updatedService.attended,
+          payment_method: updatedService.paymentMethod,
+          created_at: updatedService.createdAt ? updatedService.createdAt.toISOString() : null,
+          updated_at: updatedService.updatedAt ? updatedService.updatedAt.toISOString() : null
         })
         .eq('id', id)
       
@@ -553,6 +589,102 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
     return clientServices.filter((service) => service.clientId === clientId)
   }
 
+  // Add client attendance record
+  const addClientAttendance = async (attendanceData: Omit<ClientAttendance, "id" | "createdAt">) => {
+    try {
+      // Generate a unique ID
+      const id = uuidv4()
+      
+      // Create the new attendance record
+      const newAttendance: ClientAttendance = {
+        ...attendanceData,
+        id,
+        createdAt: new Date()
+      }
+      
+      // Save to Supabase
+      const { error } = await supabase.from('client_attendance').insert({
+        id: newAttendance.id,
+        client_id: newAttendance.clientId,
+        appointment_id: newAttendance.appointmentId,
+        date: newAttendance.date.toISOString(),
+        attended: newAttendance.attended,
+        reason: newAttendance.reason,
+        created_at: newAttendance.createdAt.toISOString()
+      })
+      
+      if (error) throw error
+      
+      // Update the state
+      setClientAttendance((prev) => [...prev, newAttendance])
+      
+      return Promise.resolve()
+    } catch (error) {
+      console.error("Erro ao adicionar registro de comparecimento:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o registro de comparecimento.",
+        variant: "destructive",
+      })
+      return Promise.reject(error)
+    }
+  }
+
+  // Update client attendance record
+  const updateClientAttendance = async (id: string, attendanceData: Partial<ClientAttendance>) => {
+    try {
+      // Find the attendance record to update
+      const attendanceIndex = clientAttendance.findIndex((attendance) => attendance.id === id)
+      if (attendanceIndex === -1) {
+        throw new Error("Registro de comparecimento não encontrado")
+      }
+      
+      // Create the updated attendance record
+      const updatedAttendance = {
+        ...clientAttendance[attendanceIndex],
+        ...attendanceData
+      }
+      
+      // Prepare data for Supabase update
+      const updateData: any = {}
+      if (attendanceData.clientId) updateData.client_id = attendanceData.clientId
+      if (attendanceData.appointmentId) updateData.appointment_id = attendanceData.appointmentId
+      if (attendanceData.date) updateData.date = attendanceData.date.toISOString()
+      if (attendanceData.attended !== undefined) updateData.attended = attendanceData.attended
+      if (attendanceData.reason !== undefined) updateData.reason = attendanceData.reason
+      
+      // Update in Supabase if there's data to update
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+          .from('client_attendance')
+          .update(updateData)
+          .eq('id', id)
+        
+        if (error) throw error
+      }
+      
+      // Update the state
+      const newAttendance = [...clientAttendance]
+      newAttendance[attendanceIndex] = updatedAttendance
+      setClientAttendance(newAttendance)
+      
+      return Promise.resolve()
+    } catch (error) {
+      console.error("Erro ao atualizar registro de comparecimento:", error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o registro de comparecimento.",
+        variant: "destructive",
+      })
+      return Promise.reject(error)
+    }
+  }
+
+  // Get client attendance records by client ID
+  const getClientAttendance = (clientId: string) => {
+    return clientAttendance.filter((attendance) => attendance.clientId === clientId)
+  }
+
   // Context value
   const value = {
     clients,
@@ -565,7 +697,10 @@ export function ClientProvider({ children }: { children: React.ReactNode }) {
     addClientService,
     updateClientService,
     deleteClientService,
-    getClientServices
+    getClientServices,
+    addClientAttendance,
+    updateClientAttendance,
+    getClientAttendance
   }
 
   return <ClientContext.Provider value={value}>{children}</ClientContext.Provider>
@@ -586,7 +721,8 @@ function generateExampleClients(): Client[] {
       nif: "123456789",
       notes: "Cliente regular, prefere atendimento pela manhã",
       initials: "AS",
-      status: "active"
+      status: "active",
+      attendance: []
     },
     {
       id: uuidv4(),
@@ -600,7 +736,8 @@ function generateExampleClients(): Client[] {
       nif: "234567891",
       notes: "Alérgico a alguns produtos",
       initials: "BC",
-      status: "active"
+      status: "active",
+      attendance: []
     },
     {
       id: uuidv4(),
@@ -613,7 +750,8 @@ function generateExampleClients(): Client[] {
       city: "Lisboa",
       nif: "345678912",
       initials: "CM",
-      status: "active"
+      status: "active",
+      attendance: []
     },
     {
       id: uuidv4(),
@@ -627,7 +765,8 @@ function generateExampleClients(): Client[] {
       nif: "456789123",
       notes: "Prefere atendimento no fim do dia",
       initials: "DS",
-      status: "active"
+      status: "active",
+      attendance: []
     },
     {
       id: uuidv4(),
@@ -640,7 +779,8 @@ function generateExampleClients(): Client[] {
       city: "Lisboa",
       nif: "567891234",
       initials: "EL",
-      status: "inactive"
+      status: "inactive",
+      attendance: []
     }
   ]
   

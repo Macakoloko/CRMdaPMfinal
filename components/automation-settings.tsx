@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -29,29 +30,51 @@ const formSchema = z.object({
   }),
 })
 
+// Valores padrão para as configurações
+const defaultValues = {
+  birthdayEnabled: true,
+  birthdayMessage:
+    "Feliz aniversário! 🎉 Como presente especial, oferecemos 15% de desconto em qualquer serviço este mês. Agende seu horário!",
+  followUpEnabled: true,
+  followUpDays: "7",
+  followUpMessage:
+    "Olá! Esperamos que tenha gostado do nosso atendimento. Quando podemos te ver novamente? Agende seu próximo horário!",
+  feedbackEnabled: true,
+  feedbackMessage:
+    "Olá! Gostaríamos de saber como foi sua experiência conosco. Poderia nos dar um feedback? Sua opinião é muito importante!",
+}
+
 export function AutomationSettings() {
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Usar uma anotação de tipo explícita para resolver o problema de tipo excessivamente profundo
+  const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      birthdayEnabled: true,
-      birthdayMessage:
-        "Feliz aniversário! 🎉 Como presente especial, oferecemos 15% de desconto em qualquer serviço este mês. Agende seu horário!",
-      followUpEnabled: true,
-      followUpDays: "7",
-      followUpMessage:
-        "Olá! Esperamos que tenha gostado do nosso atendimento. Quando podemos te ver novamente? Agende seu próximo horário!",
-      feedbackEnabled: true,
-      feedbackMessage:
-        "Olá! Gostaríamos de saber como foi sua experiência conosco. Poderia nos dar um feedback? Sua opinião é muito importante!",
-    },
-  })
+    defaultValues: defaultValues,
+  });
+  
+  // Carregar configurações do localStorage se existirem
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('automationSettings')
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings)
+        // Resetar o formulário com os valores salvos
+        form.reset(parsedSettings)
+      } catch (error) {
+        console.error("Erro ao carregar configurações de automação:", error)
+        // Em caso de erro, usar os valores padrão
+        form.reset(defaultValues)
+      }
+    }
+  }, [form])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // Salvar no localStorage
+    localStorage.setItem('automationSettings', JSON.stringify(values))
+    
     toast({
       title: "Configurações salvas",
       description: "As configurações de automação foram salvas com sucesso.",
     })
-    console.log(values)
   }
 
   return (

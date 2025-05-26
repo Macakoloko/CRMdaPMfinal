@@ -13,10 +13,12 @@ export function SupabaseClientStatus() {
   const [clientCount, setClientCount] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isCreatingTable, setIsCreatingTable] = useState(false)
+  const [visible, setVisible] = useState(true)
 
   const checkConnection = async () => {
     setStatus("checking")
     setErrorMessage(null)
+    setVisible(true)
     
     try {
       // Test connection by fetching the count of clients
@@ -31,6 +33,13 @@ export function SupabaseClientStatus() {
       
       setClientCount(count)
       setStatus("connected")
+      
+      // Hide the status indicator after 5 seconds if connected successfully
+      setTimeout(() => {
+        if (status === "connected") {
+          setVisible(false)
+        }
+      }, 5000)
     } catch (error: any) {
       console.error("Erro na conexão com Supabase:", error)
       setStatus("error")
@@ -112,6 +121,11 @@ export function SupabaseClientStatus() {
   useEffect(() => {
     checkConnection()
   }, [])
+
+  // If not visible and connected, return null (don't render anything)
+  if (!visible && status === "connected") {
+    return null
+  }
 
   return (
     <Card className="w-full">

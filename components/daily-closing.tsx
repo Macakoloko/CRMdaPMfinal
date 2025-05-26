@@ -3,17 +3,21 @@
 import { useState, useEffect } from "react"
 import { useFinancial, Transaction } from "@/context/FinancialContext"
 import { useAppointments, Appointment } from "@/context/AppointmentContext"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { toast } from "@/components/ui/use-toast"
-import { Calendar, Clock, DollarSign, CreditCard, CheckCircle, XCircle, Loader2, ArrowUp, ArrowDown, Calculator } from "lucide-react"
+import { toast } from "sonner"
+import { Calendar, Clock, DollarSign, CreditCard, CheckCircle, XCircle, Loader2, ArrowUp, ArrowDown, Calculator, Edit, Plus, Users } from "lucide-react"
 import moment from "moment"
 import "moment/locale/pt-br"
+import { FecharCaixaDialog } from "./fechar-caixa-dialog"
+import { useClients, Client, ClientService } from "@/context/ClientContext"
+import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Format currency
 const formatCurrency = (value: number) => {
@@ -33,371 +37,289 @@ const formatTime = (date: Date) => {
   return moment(date).format("HH:mm")
 }
 
+// Mock data para automações
+const mockAutomations = [
+  {
+    id: 1,
+    name: "Lembrete de Agendamento",
+    type: "reminder",
+    trigger: "before_appointment",
+    messageTemplate: "Olá {nome}, lembre-se do seu agendamento amanhã! Estamos esperando por você.",
+    active: true
+  },
+  {
+    id: 2,
+    name: "Agradecimento Pós-Atendimento",
+    type: "message",
+    trigger: "after_appointment",
+    messageTemplate: "Olá {nome}, obrigado por nos visitar hoje! Esperamos que tenha gostado do atendimento.",
+    active: true
+  }
+]
+
+// Status do agendamento
+type AppointmentStatus = "pending" | "confirmed" | "cancelled" | "no_show"
+
+// Serviço
+interface Service {
+  id: string
+  name: string
+  price: number
+  duration: number
+}
+
+// Mock de serviços disponíveis
+const mockServices: Service[] = [
+  { id: "1", name: "Corte de Cabelo", price: 25, duration: 30 },
+  { id: "2", name: "Barba", price: 15, duration: 20 },
+  { id: "3", name: "Coloração", price: 45, duration: 60 },
+  { id: "4", name: "Manicure", price: 20, duration: 45 },
+  { id: "5", name: "Pedicure", price: 25, duration: 45 },
+  { id: "6", name: "Massagem", price: 50, duration: 60 },
+]
+
+// Interface para cliente do diálogo
+interface DialogClient {
+  id: string
+  name: string
+  phone: string
+  initials: string
+  status: string
+  email?: string
+  lastAppointment?: Date
+}
+
+// Interface para agendamento modificado
+interface DialogAppointment {
+  id: string
+  service?: string
+  start: Date
+  end: Date
+  status: string
+  client: string
+  clientId: string
+  clientInitials: string
+  attended: boolean
+  originalValue: number
+  currentValue: number
+  services: Service[]
+  paymentMethod?: "cash" | "card" | "transfer" | "other"
+}
+
 export function DailyClosing() {
   const { appointments } = useAppointments()
-  const { transactions, getTransactionsByDate, closeDailyOperations, dailySummaries } = useFinancial()
+  const { transactions, getTransactionsByDate, closeDailyOperations, dailySummaries, addTransaction } = useFinancial()
+  const { clients, updateClient, addClientService, clientServices, addClientAttendance } = useClients()
   
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [isClosingDay, setIsClosingDay] = useState(false)
-  const [dayAppointments, setDayAppointments] = useState<Appointment[]>([])
-  const [dayTransactions, setDayTransactions] = useState<Transaction[]>([])
-  const [summary, setSummary] = useState({
-    totalAppointments: 0,
-    completedAppointments: 0,
-    pendingAppointments: 0,
-    cancelledAppointments: 0,
-    totalIncome: 0,
-    totalExpenses: 0,
-    profit: 0,
-    workHours: 0,
+  const [open, setOpen] = useState(false)
+  const [currentStep, setCurrentStep] = useState<"appointments" | "additional" | "automations">("appointments")
+  
+  // Estado para agendamentos modificados
+  const [modifiedAppointments, setModifiedAppointments] = useState<DialogAppointment[]>([])
+  
+  // Estado para serviços adicionais
+  const [additionalServices, setAdditionalServices] = useState<{
+    clientId: string
+    serviceName: string
+    value: number
+    paymentMethod: "cash" | "card" | "transfer" | "other"
+  }[]>([])
+  
+  // Estado para novo serviço sendo adicionado
+  const [newService, setNewService] = useState({
+    clientId: "",
+    serviceName: "",
+    value: 0,
+    paymentMethod: "cash" as "cash" | "card" | "transfer" | "other"
   })
-  const [isDayAlreadyClosed, setIsDayAlreadyClosed] = useState(false)
   
-  // Load day data when date changes
+  // Inicializa os agendamentos modificados quando o componente é montado
   useEffect(() => {
-    loadDayData()
-  }, [selectedDate, appointments, transactions, dailySummaries])
+    const todayAppointments = appointments.filter(
+      (app) => app.start.toDateString() === new Date().toDateString()
+    )
+    
+    const initialModifiedAppointments: DialogAppointment[] = todayAppointments.map(app => ({
+      id: app.id,
+      service: app.service,
+      start: app.start,
+      end: app.end,
+      status: app.status,
+      client: app.client,
+      clientId: app.clientId,
+      clientInitials: app.clientInitials,
+      attended: app.status === "confirmed",
+      originalValue: app.serviceDuration ? app.serviceDuration / 60 * 25 : 25, // Valor aproximado baseado na duração
+      currentValue: app.serviceDuration ? app.serviceDuration / 60 * 25 : 25,  // Valor aproximado baseado na duração
+      services: [], // Inicializa vazio, será adicionado durante o fechamento
+      paymentMethod: "cash"
+    }))
+    
+    setModifiedAppointments(initialModifiedAppointments)
+  }, [appointments])
   
-  const loadDayData = () => {
-    const dateString = selectedDate.toDateString()
-    
-    // Get appointments for the day
-    const filteredAppointments = appointments.filter(
-      (app) => app.start.toDateString() === dateString
+  // Função para atualizar um agendamento modificado
+  const updateModifiedAppointment = (id: string, updates: Partial<DialogAppointment>) => {
+    setModifiedAppointments(prev => 
+      prev.map(app => 
+        app.id === id ? { ...app, ...updates } : app
+      )
     )
-    setDayAppointments(filteredAppointments)
-    
-    // Get transactions for the day
-    const filteredTransactions = getTransactionsByDate(selectedDate)
-    setDayTransactions(filteredTransactions)
-    
-    // Calculate summary
-    const totalAppointments = filteredAppointments.length
-    const completedAppointments = filteredAppointments.filter(
-      (app) => app.status === "confirmed"
-    ).length
-    const pendingAppointments = filteredAppointments.filter(
-      (app) => app.status === "pending"
-    ).length
-    const cancelledAppointments = filteredAppointments.filter(
-      (app) => app.status === "cancelled"
-    ).length
-    
-    // Calculate income, expenses and profit
-    const totalIncome = filteredTransactions
-      .filter((tx) => tx.type === "income")
-      .reduce((sum, tx) => sum + tx.amount, 0)
-      
-    const totalExpenses = filteredTransactions
-      .filter((tx) => tx.type === "expense")
-      .reduce((sum, tx) => sum + tx.amount, 0)
-      
-    const profit = totalIncome - totalExpenses
-    
-    // Calculate work hours
-    let workMinutes = 0
-    filteredAppointments
-      .filter((app) => app.status === "confirmed")
-      .forEach((app) => {
-        const start = moment(app.start)
-        const end = moment(app.end)
-        workMinutes += end.diff(start, "minutes")
-      })
-    const workHours = Math.round((workMinutes / 60) * 10) / 10 // Round to 1 decimal
-    
-    setSummary({
-      totalAppointments,
-      completedAppointments,
-      pendingAppointments,
-      cancelledAppointments,
-      totalIncome,
-      totalExpenses,
-      profit,
-      workHours,
-    })
-    
-    // Check if day is already closed
-    const isClosed = dailySummaries.some(
-      (summary) => summary.date.toDateString() === dateString
-    )
-    setIsDayAlreadyClosed(isClosed)
   }
   
-  const handleCloseDay = async () => {
-    setIsClosingDay(true)
+  // Função para adicionar um serviço adicional
+  const addAdditionalService = () => {
+    if (!newService.clientId || !newService.serviceName || newService.value <= 0) {
+      toast("Preencha todos os campos para adicionar um serviço")
+      return
+    }
+    
+    setAdditionalServices(prev => [...prev, { ...newService }])
+    setNewService({
+      clientId: "",
+      serviceName: "",
+      value: 0,
+      paymentMethod: "cash"
+    })
+  }
+  
+  // Função para remover um serviço adicional
+  const removeAdditionalService = (index: number) => {
+    setAdditionalServices(prev => prev.filter((_, i) => i !== index))
+  }
+  
+  // Função para processar o fechamento de caixa
+  const processClosing = async () => {
     try {
+      // 1. Registrar histórico de comparecimento
+      const attendancePromises = modifiedAppointments.map(app => {
+        return addClientAttendance({
+          clientId: app.clientId,
+          appointmentId: app.id,
+          date: app.start,
+          attended: app.attended,
+          reason: app.attended ? undefined : "Não compareceu"
+        })
+      })
+      
+      // 2. Registrar agendamentos como serviços realizados
+      const servicePromises = modifiedAppointments
+        .filter(app => app.attended)
+        .map(app => {
+          return addClientService({
+            clientId: app.clientId,
+            serviceName: app.service || 'Serviço não especificado',
+            serviceDate: app.start,
+            price: app.currentValue,
+            attended: true,
+            paymentMethod: app.paymentMethod || 'cash'
+          })
+        })
+      
+      // 3. Registrar serviços adicionais
+      for (const service of additionalServices) {
+        addTransaction({
+          date: new Date(),
+          description: `Serviço adicional: ${service.serviceName}`,
+          amount: service.value,
+          type: "income",
+          category: "service",
+          paymentMethod: service.paymentMethod,
+        })
+        
+        // Adicionar registro no histórico de serviços do cliente
+        await addClientService({
+          clientId: service.clientId,
+          serviceName: service.serviceName,
+          serviceDate: new Date(),
+          price: service.value,
+          notes: "Serviço adicional registrado no fechamento de caixa",
+          attended: true,
+          paymentMethod: service.paymentMethod
+        })
+      }
+      
+      // 4. Registrar o fechamento do dia
       await closeDailyOperations(selectedDate)
-      toast({
-        title: "Dia fechado com sucesso",
-        description: `O fechamento do dia ${formatDate(selectedDate)} foi realizado com sucesso.`,
-      })
-      setIsDayAlreadyClosed(true)
+      
+      // 5. Avançar para as automações
+      setCurrentStep("automations")
+      
+      // Aguardar todos os registros serem feitos
+      await Promise.all([...attendancePromises, ...servicePromises])
+      
+      return Promise.resolve()
     } catch (error) {
-      console.error("Erro ao fechar o dia:", error)
-      toast({
-        title: "Erro",
-        description: "Não foi possível fechar o dia. Tente novamente.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsClosingDay(false)
+      console.error("Erro ao processar fechamento:", error)
+      toast("Erro ao processar fechamento de caixa")
+      return Promise.reject(error)
     }
   }
   
-  const handleDateChange = (date: string) => {
-    setSelectedDate(new Date(date))
+  // Função para concluir todo o processo
+  const handleComplete = () => {
+    toast("Caixa fechado com sucesso!")
+    setOpen(false)
+    // Resetar estados
+    setCurrentStep("appointments")
+    setAdditionalServices([])
+  }
+  
+  // Preparar os clientes do dia para o diálogo
+  const getDailyClients = (): DialogClient[] => {
+    // Filtrar clientes com base nos agendamentos atendidos
+    const clientIds = modifiedAppointments
+      .filter(app => app.attended)
+      .map(app => app.clientId);
+    
+    // Pegar os objetos completos do cliente e converter para o formato esperado pelo diálogo
+    return clients
+      .filter(client => clientIds.includes(client.id))
+      .map(client => ({
+        id: client.id,
+        name: client.name,
+        phone: client.phone || "",
+        initials: client.initials,
+        status: client.status,
+        email: client.email,
+        lastAppointment: new Date() // Usamos a data atual como último atendimento
+      }));
   }
   
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Calculator className="h-4 w-4" />
-          Fechar Caixa
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader>
-          <DialogTitle>Fechamento de Caixa</DialogTitle>
-          <DialogDescription>
-            Visualize o resumo do dia e feche as operações diárias.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <input
-                type="date"
-                className="rounded-md border border-input bg-background px-3 py-1 text-sm"
-                value={moment(selectedDate).format("YYYY-MM-DD")}
-                onChange={(e) => handleDateChange(e.target.value)}
-                max={moment().format("YYYY-MM-DD")}
-              />
-            </div>
-            <Badge variant={isDayAlreadyClosed ? "outline" : "default"}>
-              {isDayAlreadyClosed ? "Dia Fechado" : "Dia Aberto"}
-            </Badge>
-          </div>
-          
-          <Tabs defaultValue="summary">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="summary">Resumo</TabsTrigger>
-              <TabsTrigger value="appointments">Agendamentos</TabsTrigger>
-              <TabsTrigger value="transactions">Transações</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="summary" className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Agendamentos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold">{summary.totalAppointments}</p>
-                        <p className="text-xs text-muted-foreground">Total</p>
-                      </div>
-                      <div className="space-y-1 text-right">
-                        <div className="flex items-center gap-1 text-green-500">
-                          <CheckCircle className="h-3 w-3" />
-                          <span className="text-sm">{summary.completedAppointments} concluídos</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-amber-500">
-                          <Clock className="h-3 w-3" />
-                          <span className="text-sm">{summary.pendingAppointments} pendentes</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-red-500">
-                          <XCircle className="h-3 w-3" />
-                          <span className="text-sm">{summary.cancelledAppointments} cancelados</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Horas Trabalhadas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold">{summary.workHours}</p>
-                        <p className="text-xs text-muted-foreground">Horas</p>
-                      </div>
-                      <Clock className="h-10 w-10 text-muted-foreground opacity-50" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Resumo Financeiro</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-green-500">
-                      <ArrowUp className="h-4 w-4" />
-                      <span>Receitas</span>
-                    </div>
-                    <span className="font-medium">{formatCurrency(summary.totalIncome)}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-red-500">
-                      <ArrowDown className="h-4 w-4" />
-                      <span>Despesas</span>
-                    </div>
-                    <span className="font-medium">{formatCurrency(summary.totalExpenses)}</span>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Calculator className="h-4 w-4" />
-                      <span>Lucro/Prejuízo</span>
-                    </div>
-                    <span 
-                      className={`font-bold ${
-                        summary.profit >= 0 ? "text-green-500" : "text-red-500"
-                      }`}
-                    >
-                      {formatCurrency(summary.profit)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="appointments">
-              <ScrollArea className="h-[300px] pr-4">
-                {dayAppointments.length > 0 ? (
-                  <div className="space-y-2 pt-2">
-                    {dayAppointments.map((appointment) => (
-                      <Card key={appointment.id} className="overflow-hidden">
-                        <div 
-                          className="h-1" 
-                          style={{ backgroundColor: appointment.color }}
-                        />
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">{appointment.client}</p>
-                              <p className="text-sm text-muted-foreground">{appointment.service}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm">
-                                {formatTime(appointment.start)} - {formatTime(appointment.end)}
-                              </p>
-                              <Badge 
-                                variant={
-                                  appointment.status === "confirmed"
-                                    ? "default"
-                                    : appointment.status === "pending"
-                                      ? "outline"
-                                      : "destructive"
-                                }
-                                className="mt-1"
-                              >
-                                {appointment.status === "confirmed"
-                                  ? "Confirmado"
-                                  : appointment.status === "pending"
-                                    ? "Pendente"
-                                    : "Cancelado"}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">Nenhum agendamento para este dia.</p>
-                  </div>
-                )}
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="transactions">
-              <ScrollArea className="h-[300px] pr-4">
-                {dayTransactions.length > 0 ? (
-                  <div className="space-y-2 pt-2">
-                    {dayTransactions.map((transaction) => (
-                      <Card key={transaction.id} className="overflow-hidden">
-                        <div 
-                          className="h-1" 
-                          style={{ 
-                            backgroundColor: transaction.type === "income" 
-                              ? "var(--green-500)" 
-                              : "var(--destructive)" 
-                          }}
-                        />
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">{transaction.description}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {transaction.category} • {transaction.paymentMethod}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p 
-                                className={`font-medium ${
-                                  transaction.type === "income" 
-                                    ? "text-green-500" 
-                                    : "text-red-500"
-                                }`}
-                              >
-                                {transaction.type === "income" ? "+" : "-"}
-                                {formatCurrency(transaction.amount)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatTime(transaction.date)}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">Nenhuma transação para este dia.</p>
-                  </div>
-                )}
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
-        </div>
-        
-        <DialogFooter>
-          <Button 
-            onClick={handleCloseDay} 
-            disabled={isClosingDay || isDayAlreadyClosed}
-            className="gap-2"
-          >
-            {isClosingDay ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Processando...
-              </>
-            ) : isDayAlreadyClosed ? (
-              "Dia já fechado"
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4" />
-                Fechar o Dia
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button variant="outline" className="gap-2" onClick={() => setOpen(true)}>
+        <Calculator className="h-4 w-4" />
+        Fechar Caixa
+      </Button>
+      
+      <FecharCaixaDialog
+        open={open}
+        onOpenChange={setOpen}
+        onComplete={handleComplete}
+        dailyClients={getDailyClients()}
+        pendingAutomations={mockAutomations}
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        modifiedAppointments={modifiedAppointments}
+        updateModifiedAppointment={updateModifiedAppointment}
+        additionalServices={additionalServices}
+        newService={newService}
+        setNewService={setNewService}
+        addAdditionalService={addAdditionalService}
+        removeAdditionalService={removeAdditionalService}
+        availableServices={mockServices}
+        clients={clients.map(client => ({
+          id: client.id,
+          name: client.name,
+          phone: client.phone || "",
+          initials: client.initials,
+          status: client.status,
+          email: client.email
+        }))}
+        processClosing={processClosing}
+      />
+    </>
   )
 } 

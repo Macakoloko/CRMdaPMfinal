@@ -54,7 +54,7 @@ export function SidebarNavigation() {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [companyName, setCompanyName] = useState("Beauty Salon CRM")
+  const [businessName, setBusinessName] = useState("SALÃO BELEZA TOTAL")
   const [mounted, setMounted] = useState(false)
 
   // Set mounted state to true after component mounts
@@ -77,27 +77,19 @@ export function SidebarNavigation() {
     }
   }, [])
 
-  // Carregar nome da empresa do localStorage
+  // Carregar o nome do estabelecimento do localStorage
   useEffect(() => {
-    const savedName = localStorage.getItem("companyName")
-    if (savedName && savedName.trim() !== "") {
-      setCompanyName(savedName)
-    }
-    
-    // Ouvir evento de mudança do nome da empresa
-    const handleCompanyNameChange = (event: CustomEvent) => {
-      const newName = event.detail
-      if (newName && newName.trim() !== "") {
-        setCompanyName(newName)
-      } else {
-        setCompanyName("Beauty Salon CRM")
+    // Carregar o nome do estabelecimento do localStorage se existir
+    const savedBusinessInfo = localStorage.getItem("businessInfo")
+    if (savedBusinessInfo) {
+      try {
+        const businessInfo = JSON.parse(savedBusinessInfo)
+        if (businessInfo.nome) {
+          setBusinessName(businessInfo.nome.toUpperCase())
+        }
+      } catch (error) {
+        console.error("Erro ao carregar informações da empresa:", error)
       }
-    }
-    
-    document.addEventListener('companyNameChanged', handleCompanyNameChange as EventListener)
-    
-    return () => {
-      document.removeEventListener('companyNameChanged', handleCompanyNameChange as EventListener)
     }
   }, [])
 
@@ -137,7 +129,7 @@ export function SidebarNavigation() {
         )}
       >
         <div className="flex h-16 items-center justify-between border-b px-4">
-          <h1 className="text-lg font-bold text-primary truncate">{companyName}</h1>
+          <h1 className="text-lg font-bold text-primary truncate">{businessName}</h1>
           <Button
             variant="ghost"
             size="icon"

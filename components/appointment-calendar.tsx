@@ -173,7 +173,7 @@ const CustomDayWrapper = ({ children, value }: { children: React.ReactNode; valu
 
 export function AppointmentCalendar() {
   const { appointments, isLoading, deleteAppointment, updateAppointment } = useAppointments()
-  const [view, setView] = useState<View>("week")
+  const [view, setView] = useState<View>("agenda")
   const [date, setDate] = useState(new Date())
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)

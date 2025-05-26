@@ -24,6 +24,7 @@ export function FinancialStatus() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [connectionStatus, setConnectionStatus] = useState<"checking" | "connected" | "error">("checking")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showConnectionStatus, setShowConnectionStatus] = useState(true)
   
   // Check connection and load data
   useEffect(() => {
@@ -37,6 +38,11 @@ export function FinancialStatus() {
         }
         
         setConnectionStatus("connected")
+        
+        // Auto-hide connection status after 5 seconds if connected
+        setTimeout(() => {
+          setShowConnectionStatus(false)
+        }, 5000)
         
         // Load transactions
         await loadTransactions()
@@ -109,31 +115,33 @@ export function FinancialStatus() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center justify-between rounded-md border p-2">
-            <span>Conexão Supabase:</span>
-            <Badge variant={
-              connectionStatus === "connected" ? "default" :
-              connectionStatus === "error" ? "destructive" : "outline"
-            }>
-              {connectionStatus === "connected" && "Conectado"}
-              {connectionStatus === "error" && "Erro"}
-              {connectionStatus === "checking" && "Verificando..."}
-            </Badge>
+        {(showConnectionStatus || connectionStatus === "error" || connectionStatus === "checking") && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center justify-between rounded-md border p-2">
+              <span>Conexão Supabase:</span>
+              <Badge variant={
+                connectionStatus === "connected" ? "default" :
+                connectionStatus === "error" ? "destructive" : "outline"
+              }>
+                {connectionStatus === "connected" && "Conectado"}
+                {connectionStatus === "error" && "Erro"}
+                {connectionStatus === "checking" && "Verificando..."}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center justify-between rounded-md border p-2">
+              <span>Dados Financeiros:</span>
+              <Badge variant={
+                status === "success" ? "default" :
+                status === "error" ? "destructive" : "outline"
+              }>
+                {status === "success" && "Carregados"}
+                {status === "error" && "Erro"}
+                {status === "loading" && "Carregando..."}
+              </Badge>
+            </div>
           </div>
-          
-          <div className="flex items-center justify-between rounded-md border p-2">
-            <span>Dados Financeiros:</span>
-            <Badge variant={
-              status === "success" ? "default" :
-              status === "error" ? "destructive" : "outline"
-            }>
-              {status === "success" && "Carregados"}
-              {status === "error" && "Erro"}
-              {status === "loading" && "Carregando..."}
-            </Badge>
-          </div>
-        </div>
+        )}
         
         {connectionStatus === "error" && errorMessage && (
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
