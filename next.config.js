@@ -19,6 +19,17 @@ const nextConfig = {
     parallelServerCompiles: true,
   },
   webpack: (config, { dev, isServer }) => {
+    // Resolver aliases para substituir imports problemáticos
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Substituir o módulo canUseDom do rc-util pelo nosso próprio
+      'rc-util/es/Dom/canUseDom': `${__dirname}/lib/dom.ts`,
+      // Substituir o módulo useLayoutEffect do rc-util pelo nosso próprio
+      'rc-util/es/hooks/useLayoutEffect': `${__dirname}/lib/useLayoutEffect.ts`,
+      // Substituir o módulo dynamicCSS do rc-util pelo nosso próprio
+      'rc-util/es/Dom/dynamicCSS': `${__dirname}/lib/dynamicCSS.ts`,
+    };
+    
     // Only run on the client side
     if (!isServer) {
       // Optimize chunk loading
