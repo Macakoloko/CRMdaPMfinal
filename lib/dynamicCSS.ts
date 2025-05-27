@@ -28,11 +28,8 @@ function injectCSS(css: string): HTMLStyleElement | null {
   return styleNode;
 }
 
-export function removeCSS(css: string, options: { mark?: string } = {}) {
+export function removeCSS(styleId: string) {
   if (canUseDom()) {
-    const { mark } = options;
-    const styleId = getMark({ mark }) || '';
-
     const styleNode = document.getElementById(styleId);
     if (styleNode) {
       styleNode.parentNode?.removeChild(styleNode);
@@ -41,20 +38,15 @@ export function removeCSS(css: string, options: { mark?: string } = {}) {
 }
 
 // Função para atualizar CSS
-export function updateCSS(css: string, key: string, options: { mark?: string } = {}) {
-  const { mark } = options;
-
+export function updateCSS(css: string, key: string) {
   if (canUseDom()) {
     const styleId = `${MARK_KEY}-${key}`;
     let styleNode = document.getElementById(styleId);
     
     if (styleNode) {
       if (styleNode.tagName === 'STYLE') {
-        if (styleNode.styleSheet) {
-          (styleNode.styleSheet as any).cssText = css;
-        } else {
-          styleNode.innerHTML = css;
-        }
+        // Use textContent instead of styleSheet which is deprecated
+        styleNode.textContent = css;
       }
       return styleNode;
     }

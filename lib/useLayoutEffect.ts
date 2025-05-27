@@ -1,4 +1,4 @@
-import { useLayoutEffect as useLayoutEffectReact, useEffect } from 'react';
+import { useLayoutEffect as useLayoutEffectReact, useEffect, useRef } from 'react';
 import canUseDom from './dom';
 
 /**
@@ -11,7 +11,7 @@ const useLayoutEffect = canUseDom() ? useLayoutEffectReact : useEffect;
  * Similar ao useUpdateEffect, mas usando useLayoutEffect
  */
 export const useLayoutUpdateEffect: typeof useLayoutEffectReact = (callback, deps) => {
-  const firstMountRef = React.useRef(true);
+  const firstMountRef = useRef(true);
 
   useLayoutEffect(() => {
     if (firstMountRef.current) {
