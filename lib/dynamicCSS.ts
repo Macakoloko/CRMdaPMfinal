@@ -50,7 +50,8 @@ export function removeCSS(css: string, options: { mark?: string } = {}) {
   }
 }
 
-export default function updateCSS(css: string, key: string, options: { mark?: string } = {}) {
+// Função para atualizar CSS
+export function updateCSS(css: string, key: string, options: { mark?: string } = {}) {
   const { mark } = options;
 
   if (canUseDom()) {
@@ -80,4 +81,7 @@ export default function updateCSS(css: string, key: string, options: { mark?: st
   }
   
   return null;
-} 
+}
+
+// Exportação padrão para compatibilidade
+export default updateCSS; 

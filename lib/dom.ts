@@ -14,6 +14,9 @@ export const canUseDom = (): boolean => {
   );
 };
 
+// Exportação padrão para compatibilidade com importações diferentes
+export default canUseDom;
+
 /**
  * Função para adicionar CSS dinâmico
  */
