@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Badge, Button, Row, Col, Select, Typography } from 'antd';
 import { LeftOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import NewAppointmentForm from '../components/NewAppointmentForm';
 // ... existing code ...
+
+// Configurar dayjs para usar o locale pt-br
+dayjs.locale('pt-br');
 
 // Helpers para manipulação de datas
 const formatDate = (date) => {
@@ -23,6 +28,16 @@ const addMonths = (date, months) => {
   const result = new Date(date);
   result.setMonth(result.getMonth() + months);
   return result;
+};
+
+// Converter Date para dayjs
+const dateToDay = (date) => {
+  return dayjs(date);
+};
+
+// Converter dayjs para Date
+const dayToDate = (day) => {
+  return day.toDate();
 };
 
 const Agenda = () => {
@@ -121,7 +136,7 @@ const Agenda = () => {
   };
   
   const dateCellRender = (value) => {
-    // Use a Date do valor para comparar
+    // Converter o valor dayjs para Date
     const valueDate = value.toDate();
     
     // Filter appointments for this day
@@ -181,7 +196,7 @@ const Agenda = () => {
       </Row>
       
       <Calendar 
-        value={currentDate}
+        value={dateToDay(currentDate)}
         dateCellRender={dateCellRender}
         onPanelChange={(date) => setCurrentDate(date.toDate())}
         mode="month"

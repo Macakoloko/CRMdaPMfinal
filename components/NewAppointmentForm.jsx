@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Form, Modal, TimePicker, DatePicker, Input, Select } from 'antd';
+import dayjs from 'dayjs';
 import QuickClientForm from './QuickClientForm';
 import QuickServiceForm from './QuickServiceForm';
 
@@ -9,7 +10,7 @@ const NewAppointmentForm = ({ visible, onClose, onSave, clients, services }) => 
   const [showQuickServiceForm, setShowQuickServiceForm] = useState(false);
   
   const handleSubmit = (values) => {
-    // Combine date and time values
+    // Valores já são dayjs, convertendo para Date
     const selectedDate = values.date.toDate();
     const startTime = values.startTime.toDate();
     const endTime = values.endTime.toDate();
