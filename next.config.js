@@ -28,6 +28,10 @@ const nextConfig = {
       'rc-util/es/hooks/useLayoutEffect': `${__dirname}/lib/useLayoutEffect.ts`,
       // Substituir o módulo dynamicCSS do rc-util pelo nosso próprio
       'rc-util/es/Dom/dynamicCSS': `${__dirname}/lib/dynamicCSS.ts`,
+      // Substitua as variações de canUseDom para solucionar problemas de importação
+      'rc-util/lib/Dom/canUseDom': `${__dirname}/lib/dom.ts`,
+      'rc-util/lib/hooks/useLayoutEffect': `${__dirname}/lib/useLayoutEffect.ts`,
+      'rc-util/lib/Dom/dynamicCSS': `${__dirname}/lib/dynamicCSS.ts`,
     };
     
     // Only run on the client side

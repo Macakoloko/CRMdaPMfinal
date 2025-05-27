@@ -10,15 +10,25 @@ const NewAppointmentForm = ({ visible, onClose, onSave, clients, services }) => 
   
   const handleSubmit = (values) => {
     // Combine date and time values
-    const startDateTime = values.date.clone().set({
-      hour: values.startTime.hour(),
-      minute: values.startTime.minute()
-    });
+    const selectedDate = values.date.toDate();
+    const startTime = values.startTime.toDate();
+    const endTime = values.endTime.toDate();
     
-    const endDateTime = values.date.clone().set({
-      hour: values.endTime.hour(),
-      minute: values.endTime.minute()
-    });
+    const startDateTime = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      startTime.getHours(),
+      startTime.getMinutes()
+    );
+    
+    const endDateTime = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      endTime.getHours(),
+      endTime.getMinutes()
+    );
     
     const appointment = {
       ...values,

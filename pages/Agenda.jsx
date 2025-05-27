@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Badge, Button, Row, Col, Select, Typography } from 'antd';
 import { LeftOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import 'moment/locale/pt-br';
 import NewAppointmentForm from '../components/NewAppointmentForm';
 // ... existing code ...
 
-moment.locale('pt-br');
+// Helpers para manipulação de datas
+const formatDate = (date) => {
+  return new Intl.DateTimeFormat('pt-BR', { 
+    month: 'long', 
+    year: 'numeric' 
+  }).format(date);
+};
+
+const formatTime = (date) => {
+  return new Intl.DateTimeFormat('pt-BR', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  }).format(date);
+};
+
+const addMonths = (date, months) => {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+};
 
 const Agenda = () => {
-  const [currentDate, setCurrentDate] = useState(moment());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [appointments, setAppointments] = useState([]);
   const [showNewAppointmentForm, setShowNewAppointmentForm] = useState(false);
   const [clients, setClients] = useState([]);
@@ -17,7 +34,7 @@ const Agenda = () => {
   
   useEffect(() => {
     // Fetch appointments, clients and services from your API or local storage
-    fetchAppointments(currentDate.month(), currentDate.year());
+    fetchAppointments(currentDate.getMonth(), currentDate.getFullYear());
     fetchClients();
     fetchServices();
   }, [currentDate]);
@@ -29,11 +46,18 @@ const Agenda = () => {
       // setAppointments(response.data);
       
       // Mock data for demonstration
+      const now = new Date();
+      const startTime = new Date(now);
+      startTime.setHours(10, 0, 0);
+      
+      const endTime = new Date(now);
+      endTime.setHours(11, 0, 0);
+      
       setAppointments([
         {
           id: 1,
-          startDateTime: moment().hour(10).minute(0),
-          endDateTime: moment().hour(11).minute(0),
+          startDateTime: startTime,
+          endDateTime: endTime,
           clientId: 1,
           clientName: 'Maria Silva',
           serviceId: 1,
@@ -65,11 +89,11 @@ const Agenda = () => {
   };
   
   const handlePrevMonth = () => {
-    setCurrentDate(prev => prev.clone().subtract(1, 'month'));
+    setCurrentDate(prev => addMonths(prev, -1));
   };
   
   const handleNextMonth = () => {
-    setCurrentDate(prev => prev.clone().add(1, 'month'));
+    setCurrentDate(prev => addMonths(prev, 1));
   };
   
   const handleSaveAppointment = (newAppointment) => {
@@ -97,12 +121,18 @@ const Agenda = () => {
   };
   
   const dateCellRender = (value) => {
+    // Use a Date do valor para comparar
+    const valueDate = value.toDate();
+    
     // Filter appointments for this day
-    const dayAppointments = appointments.filter(appointment => 
-      appointment.startDateTime.date() === value.date() && 
-      appointment.startDateTime.month() === value.month() && 
-      appointment.startDateTime.year() === value.year()
-    );
+    const dayAppointments = appointments.filter(appointment => {
+      const appDate = appointment.startDateTime;
+      return (
+        appDate.getDate() === valueDate.getDate() && 
+        appDate.getMonth() === valueDate.getMonth() && 
+        appDate.getFullYear() === valueDate.getFullYear()
+      );
+    });
     
     if (dayAppointments.length === 0) return null;
     
@@ -112,7 +142,7 @@ const Agenda = () => {
           <li key={appointment.id}>
             <Badge 
               status="processing" 
-              text={`${appointment.startDateTime.format('HH:mm')} - ${appointment.clientName}`} 
+              text={`${formatTime(appointment.startDateTime)} - ${appointment.clientName}`} 
             />
           </li>
         ))}
@@ -141,19 +171,19 @@ const Agenda = () => {
         <Col>
           <Button icon={<LeftOutlined />} onClick={handlePrevMonth} />
           <span style={{ margin: '0 16px', fontSize: 16 }}>
-            {currentDate.format('MMMM YYYY').replace(/^\w/, c => c.toUpperCase())}
+            {formatDate(currentDate)}
           </span>
           <Button icon={<RightOutlined />} onClick={handleNextMonth} />
         </Col>
         <Col>
-          <Button onClick={() => setCurrentDate(moment())}>Hoje</Button>
+          <Button onClick={() => setCurrentDate(new Date())}>Hoje</Button>
         </Col>
       </Row>
       
       <Calendar 
         value={currentDate}
         dateCellRender={dateCellRender}
-        onPanelChange={(date) => setCurrentDate(date)}
+        onPanelChange={(date) => setCurrentDate(date.toDate())}
         mode="month"
       />
       
