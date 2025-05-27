@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual do Usuário - CRM PEEEM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #6366F1;
+            border-bottom: 2px solid #6366F1;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4F46E5;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #4338CA;
+            margin-top: 25px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        img {
+            max-width: 100%;
+            border-radius: 4px;
+            margin: 15px 0;
+            border: 1px solid #e5e7eb;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .tip {
+            background-color: #e0e7ff;
+            border-left: 4px solid #6366F1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #e5e7eb;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f3f4f6;
+        }
+        .toc {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 15px;
+        }
+        .toc > ul {
+            padding-left: 0;
+        }
+        .toc li {
+            margin-bottom: 8px;
+        }
+        .toc a {
+            color: #4338CA;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        @media print {
+            body {
+                padding: 0;
+                max-width: none;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Manual do Usuário - CRM PEEEM</h1>
+    
+    <div class="toc">
+        <h2>Índice</h2>
+        <ul>
+            <li><a href="#introducao">1. Introdução</a></li>
+            <li><a href="#primeiros-passos">2. Primeiros Passos</a>
+                <ul>
+                    <li><a href="#acesso">2.1. Acesso ao Sistema</a></li>
+                    <li><a href="#interface">2.2. Interface Principal</a></li>
+                    <li><a href="#tutorial">2.3. Tutorial Interativo</a></li>
+                </ul>
+            </li>
+            <li><a href="#painel-controle">3. Painel de Controle</a>
+                <ul>
+                    <li><a href="#visao-geral">3.1. Visão Geral</a></li>
+                    <li><a href="#analises">3.2. Análises</a></li>
+                    <li><a href="#acesso-rapido">3.3. Acesso Rápido</a></li>
+                </ul>
+            </li>
+            <li><a href="#agendamentos">4. Agendamentos</a>
+                <ul>
+                    <li><a href="#criar-agendamento">4.1. Criar Novo Agendamento</a></li>
+                    <li><a href="#gerenciar-agendamentos">4.2. Gerenciar Agendamentos</a></li>
+                    <li><a href="#calendario">4.3. Visualizar Calendário</a></li>
+                </ul>
+            </li>
+            <li><a href="#financeiro">5. Financeiro</a>
+                <ul>
+                    <li><a href="#registrar-venda">5.1. Registrar Venda</a></li>
+                    <li><a href="#registrar-despesa">5.2. Registrar Despesa</a></li>
+                    <li><a href="#fechamento-caixa">5.3. Fechamento de Caixa</a></li>
+                    <li><a href="#relatorios">5.4. Relatórios Financeiros</a></li>
+                </ul>
+            </li>
+            <li><a href="#clientes">6. Clientes</a>
+                <ul>
+                    <li><a href="#cadastrar-cliente">6.1. Cadastrar Novo Cliente</a></li>
+                    <li><a href="#gerenciar-clientes">6.2. Gerenciar Clientes</a></li>
+                    <li><a href="#historico-cliente">6.3. Histórico do Cliente</a></li>
+                </ul>
+            </li>
+            <li><a href="#chat">7. Chat</a>
+                <ul>
+                    <li><a href="#enviar-mensagem">7.1. Enviar Mensagem</a></li>
+                    <li><a href="#conversas">7.2. Gerenciar Conversas</a></li>
+                </ul>
+            </li>
+            <li><a href="#produtos-servicos">8. Produtos e Serviços</a>
+                <ul>
+                    <li><a href="#cadastrar-produto">8.1. Cadastrar Novo Produto</a></li>
+                    <li><a href="#cadastrar-servico">8.2. Cadastrar Novo Serviço</a></li>
+                    <li><a href="#gerenciar-estoque">8.3. Gerenciar Estoque</a></li>
+                </ul>
+            </li>
+            <li><a href="#automacoes">9. Automações</a>
+                <ul>
+                    <li><a href="#configurar-automacao">9.1. Configurar Automação</a></li>
+                    <li><a href="#lembretes">9.2. Lembretes Automáticos</a></li>
+                </ul>
+            </li>
+            <li><a href="#configuracoes">10. Configurações</a>
+                <ul>
+                    <li><a href="#dados-empresa">10.1. Dados da Empresa</a></li>
+                    <li><a href="#usuarios">10.2. Gerenciar Usuários</a></li>
+                    <li><a href="#preferencias">10.3. Preferências</a></li>
+                </ul>
+            </li>
+            <li><a href="#suporte">11. Suporte e Ajuda</a></li>
+        </ul>
+    </div>
+
+    <div class="section" id="introducao">
+        <h2>1. Introdução</h2>
+        <p>Bem-vindo ao CRM PEEEM, um sistema completo para gestão de salões de beleza e estética. Este manual fornece informações detalhadas sobre todas as funcionalidades do sistema, ajudando você a aproveitar ao máximo os recursos disponíveis.</p>
+        <p>O CRM PEEEM foi desenvolvido para simplificar e otimizar a gestão do seu negócio, permitindo controlar agendamentos, gerenciar clientes, controlar finanças, administrar estoque de produtos e muito mais.</p>
+    </div>
+
+    <div class="section" id="primeiros-passos">
+        <h2>2. Primeiros Passos</h2>
+        
+        <div id="acesso">
+            <h3>2.1. Acesso ao Sistema</h3>
+            <p>Para acessar o CRM PEEEM, siga os passos abaixo:</p>
+            <ol>
+                <li>Abra seu navegador preferido (recomendamos Chrome, Firefox, Edge ou Safari mais recentes)</li>
+                <li>Digite o endereço do sistema na barra de navegação</li>
+                <li>Na tela de login, digite seu e-mail e senha cadastrados</li>
+                <li>Clique no botão "Entrar"</li>
+            </ol>
+            <div class="tip">
+                <strong>Dica:</strong> Ao acessar o sistema pela primeira vez, use as credenciais fornecidas pelo administrador. Recomendamos alterar sua senha no primeiro acesso.
+            </div>
+        </div>
+
+        <div id="interface">
+            <h3>2.2. Interface Principal</h3>
+            <p>A interface do CRM PEEEM é composta pelos seguintes elementos:</p>
+            <ul>
+                <li><strong>Barra lateral de navegação:</strong> Localizada à esquerda, permite acesso rápido às principais seções do sistema.</li>
+                <li><strong>Barra superior:</strong> Contém o acesso às notificações, botão de acesso rápido, ajuda e menu do usuário.</li>
+                <li><strong>Área principal:</strong> Exibe o conteúdo da seção selecionada.</li>
+            </ul>
+        </div>
+
+        <div id="tutorial">
+            <h3>2.3. Tutorial Interativo</h3>
+            <p>O CRM PEEEM possui um tutorial interativo que apresenta as principais funcionalidades do sistema. Para iniciá-lo:</p>
+            <ol>
+                <li>Clique no botão de ajuda (ícone de interrogação) na barra superior</li>
+                <li>Selecione "Iniciar Tutorial" no menu de ajuda</li>
+                <li>Alternativamente, clique no botão "Tutorial" na barra superior</li>
+            </ol>
+            <p>O tutorial guiará você pelas principais seções do sistema, explicando suas funcionalidades.</p>
+            <div class="tip">
+                <strong>Nota:</strong> Se o tutorial não iniciar automaticamente, verifique se seu navegador permite a execução de JavaScript e se cookies estão habilitados.
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="painel-controle">
+        <h2>3. Painel de Controle</h2>
+        
+        <div id="visao-geral">
+            <h3>3.1. Visão Geral</h3>
+            <p>A aba "Visão Geral" do painel de controle apresenta as principais informações do seu negócio:</p>
+            <ul>
+                <li><strong>Estatísticas:</strong> Visualize indicadores como faturamento diário, mensal, número de agendamentos e novos clientes.</li>
+                <li><strong>Gráfico de receitas:</strong> Acompanhe a evolução da receita ao longo do tempo.</li>
+                <li><strong>Serviços populares:</strong> Veja quais são os serviços mais procurados pelos clientes.</li>
+                <li><strong>Despesas recentes:</strong> Visualize as últimas despesas registradas.</li>
+                <li><strong>Aniversariantes do mês:</strong> Lista de clientes que fazem aniversário no mês atual.</li>
+            </ul>
+        </div>
+
+        <div id="analises">
+            <h3>3.2. Análises</h3>
+            <p>A aba "Análises" apresenta informações mais detalhadas sobre o desempenho do seu negócio:</p>
+            <ul>
+                <li><strong>Taxa de retorno:</strong> Percentual de clientes que voltam a utilizar seus serviços.</li>
+                <li><strong>Serviços por cliente:</strong> Média de serviços realizados por cliente.</li>
+                <li><strong>Ticket médio:</strong> Valor médio gasto pelos clientes em cada visita.</li>
+            </ul>
+        </div>
+
+        <div id="acesso-rapido">
+            <h3>3.3. Acesso Rápido</h3>
+            <p>A aba "Acesso Rápido" permite acessar rapidamente as funções mais utilizadas do sistema:</p>
+            <ul>
+                <li><strong>Agendamentos:</strong> Criar novo agendamento ou consultar agendamentos existentes.</li>
+                <li><strong>Financeiro:</strong> Registrar vendas, despesas ou visualizar relatórios.</li>
+                <li><strong>Clientes:</strong> Cadastrar novo cliente ou gerenciar clientes existentes.</li>
+                <li><strong>Serviços:</strong> Adicionar, listar ou editar serviços.</li>
+            </ul>
+            <p>Também é possível acessar o menu de acesso rápido clicando no botão "Acesso Rápido" na barra superior.</p>
+        </div>
+    </div>
+
+    <div class="section" id="agendamentos">
+        <h2>4. Agendamentos</h2>
+        
+        <div id="criar-agendamento">
+            <h3>4.1. Criar Novo Agendamento</h3>
+            <p>Para criar um novo agendamento:</p>
+            <ol>
+                <li>Acesse a seção "Agendamentos" no menu lateral</li>
+                <li>Clique no botão "Novo Agendamento"</li>
+                <li>Selecione o cliente (ou cadastre um novo)</li>
+                <li>Escolha o serviço a ser realizado</li>
+                <li>Selecione a data e horário</li>
+                <li>Escolha o profissional responsável</li>
+                <li>Adicione observações se necessário</li>
+                <li>Clique em "Salvar"</li>
+            </ol>
+            <div class="tip">
+                <strong>Dica:</strong> Para agilizar o processo, você também pode criar um agendamento diretamente do painel de controle, na aba "Acesso Rápido".
+            </div>
+        </div>
+
+        <div id="gerenciar-agendamentos">
+            <h3>4.2. Gerenciar Agendamentos</h3>
+            <p>Para gerenciar os agendamentos existentes:</p>
+            <ol>
+                <li>Acesse a seção "Agendamentos" no menu lateral</li>
+                <li>Visualize a lista de agendamentos</li>
+                <li>Utilize os filtros para encontrar agendamentos específicos</li>
+                <li>Clique em um agendamento para ver seus detalhes</li>
+                <li>Use os botões de ação para:</li>
+                <ul>
+                    <li>Editar o agendamento</li>
+                    <li>Cancelar o agendamento</li>
+                    <li>Marcar como concluído</li>
+                    <li>Reagendar</li>
+                </ul>
+            </ol>
+        </div>
+
+        <div id="calendario">
+            <h3>4.3. Visualizar Calendário</h3>
+            <p>O calendário permite visualizar todos os agendamentos de forma organizada:</p>
+            <ol>
+                <li>Acesse a seção "Agendamentos" no menu lateral</li>
+                <li>Clique na aba "Calendário"</li>
+                <li>Escolha a visualização desejada:
+                    <ul>
+                        <li>Diária: visualize os agendamentos de um dia específico</li>
+                        <li>Semanal: visualize os agendamentos da semana</li>
+                        <li>Mensal: visualize os agendamentos do mês</li>
+                    </ul>
+                </li>
+                <li>Clique em um horário vazio para criar um novo agendamento</li>
+                <li>Clique em um agendamento existente para ver seus detalhes ou editá-lo</li>
+            </ol>
+            <div class="tip">
+                <strong>Dica:</strong> Use os filtros para visualizar apenas os agendamentos de um profissional específico ou de um tipo de serviço.
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="financeiro">
+        <h2>5. Financeiro</h2>
+        
+        <div id="registrar-venda">
+            <h3>5.1. Registrar Venda</h3>
+            <p>Para registrar uma nova venda:</p>
+            <ol>
+                <li>Acesse a seção "Financeiro" no menu lateral</li>
+                <li>Clique no botão "Nova Venda"</li>
+                <li>Selecione o cliente</li>
+                <li>Adicione os produtos e/ou serviços vendidos</li>
+                <li>Aplique descontos se necessário</li>
+                <li>Selecione a forma de pagamento</li>
+                <li>Clique em "Finalizar Venda"</li>
+            </ol>
+            <div class="tip">
+                <strong>Dica:</strong> Você também pode registrar uma venda a partir de um agendamento concluído, clicando no botão "Registrar Pagamento".
+            </div>
+        </div>
+
+        <div id="registrar-despesa">
+            <h3>5.2. Registrar Despesa</h3>
+            <p>Para registrar uma nova despesa:</p>
+            <ol>
+                <li>Acesse a seção "Financeiro" no menu lateral</li>
+                <li>Clique no botão "Nova Despesa"</li>
+                <li>Selecione a categoria da despesa</li>
+                <li>Preencha o valor</li>
+                <li>Adicione a descrição</li>
+                <li>Selecione a data</li>
+                <li>Anexe o comprovante (opcional)</li>
+                <li>Clique em "Salvar"</li>
+            </ol>
+        </div>
+
+        <div id="fechamento-caixa">
+            <h3>5.3. Fechamento de Caixa</h3>
+            <p>O fechamento de caixa deve ser realizado diariamente:</p>
+            <ol>
+                <li>Clique no botão "Fechamento de Caixa" na barra superior</li>
+                <li>Confira o resumo das vendas e despesas do dia</li>
+                <li>Verifique o valor em caixa</li>
+                <li>Ajuste valores se necessário</li>
+                <li>Adicione observações</li>
+                <li>Clique em "Confirmar Fechamento"</li>
+            </ol>
+            <div class="tip">
+                <strong>Importante:</strong> O fechamento de caixa é essencial para manter a precisão dos relatórios financeiros. Recomendamos realizá-lo ao final de cada dia de trabalho.
+            </div>
+        </div>
+
+        <div id="relatorios">
+            <h3>5.4. Relatórios Financeiros</h3>
+            <p>O sistema oferece diversos relatórios financeiros:</p>
+            <ul>
+                <li><strong>Relatório de Vendas:</strong> Visualize todas as vendas em um período específico.</li>
+                <li><strong>Relatório de Despesas:</strong> Analise as despesas por categoria e período.</li>
+                <li><strong>Fluxo de Caixa:</strong> Acompanhe as entradas e saídas do caixa.</li>
+                <li><strong>Lucros e Perdas:</strong> Visualize o resultado financeiro do negócio.</li>
+                <li><strong>Faturamento por Serviço:</strong> Identifique os serviços mais lucrativos.</li>
+                <li><strong>Faturamento por Profissional:</strong> Analise o desempenho de cada profissional.</li>
+            </ul>
+            <p>Para acessar os relatórios:</p>
+            <ol>
+                <li>Acesse a seção "Financeiro" no menu lateral</li>
+                <li>Clique na aba "Relatórios"</li>
+                <li>Selecione o tipo de relatório desejado</li>
+                <li>Defina o período de análise</li>
+                <li>Clique em "Gerar Relatório"</li>
+            </ol>
+            <div class="tip">
+                <strong>Dica:</strong> Você pode exportar os relatórios em formato PDF ou Excel para análise posterior ou para compartilhar com seu contador.
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="suporte">
+        <h2>11. Suporte e Ajuda</h2>
+        <p>Se você encontrar dificuldades ao utilizar o sistema, há várias formas de obter ajuda:</p>
+        <ul>
+            <li><strong>Tutorial Interativo:</strong> Acesse o tutorial clicando no botão "Tutorial" na barra superior.</li>
+            <li><strong>Manual do Usuário:</strong> Este documento detalhado está disponível para consulta a qualquer momento.</li>
+            <li><strong>Vídeos de Treinamento:</strong> Acesse a biblioteca de vídeos tutoriais para aprender a usar o sistema.</li>
+            <li><strong>Suporte Técnico:</strong> Entre em contato com nossa equipe de suporte através do e-mail suporte@crmpeeem.com ou pelo telefone (XX) XXXX-XXXX.</li>
+        </ul>
+        <div class="tip">
+            <strong>Dica:</strong> Ao entrar em contato com o suporte, tenha em mãos informações detalhadas sobre o problema, como a seção do sistema onde ocorreu, mensagens de erro exibidas e os passos que levaram ao problema.
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023-2024 CRM PEEEM - Todos os direitos reservados</p>
+        <p>Versão do Manual: 1.0 - Última atualização: Maio/2024</p>
+    </footer>
+</body>
+</html>

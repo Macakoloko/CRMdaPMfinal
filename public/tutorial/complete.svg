@@ -1,0 +1,20 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#F9FAFB"/>
+  
+  <!-- Círculo de sucesso -->
+  <circle cx="200" cy="120" r="60" fill="#E0E7FF"/>
+  <circle cx="200" cy="120" r="50" fill="#C7D2FE"/>
+  
+  <!-- Ícone de verificação -->
+  <path d="M170 120L190 140L230 100" stroke="#6366F1" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Texto -->
+  <rect x="100" y="200" width="200" height="20" rx="4" fill="#E5E7EB"/>
+  <rect x="130" y="230" width="140" height="20" rx="4" fill="#E5E7EB"/>
+  
+  <!-- Estrelas decorativas -->
+  <path d="M100 70L105 80L115 80L107 87L110 97L100 92L90 97L93 87L85 80L95 80L100 70Z" fill="#6366F1"/>
+  <path d="M300 70L305 80L315 80L307 87L310 97L300 92L290 97L293 87L285 80L295 80L300 70Z" fill="#6366F1"/>
+  <path d="M320 170L323 175L328 175L324 179L325 184L320 182L315 184L316 179L312 175L317 175L320 170Z" fill="#6366F1"/>
+  <path d="M80 170L83 175L88 175L84 179L85 184L80 182L75 184L76 179L72 175L77 175L80 170Z" fill="#6366F1"/>
+</svg> 

@@ -3,12 +3,12 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
+export default function DashboardRedirect() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redireciona automaticamente para a página principal
-    router.push("/")
+    // Redireciona para a página principal
+    router.push("/painel")
   }, [router])
 
   // Mostra um spinner enquanto redireciona

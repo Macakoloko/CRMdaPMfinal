@@ -1,0 +1,33 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#F9FAFB"/>
+  
+  <!-- Barra superior -->
+  <rect x="0" y="0" width="400" height="40" fill="#F3F4F6"/>
+  <rect x="320" y="10" width="70" height="20" rx="4" fill="#6366F1"/>
+  <text x="335" y="24" font-family="Arial" font-size="10" fill="white">Acesso Rápido</text>
+  
+  <!-- Menu lateral -->
+  <rect x="0" y="40" width="80" height="260" fill="#F3F4F6"/>
+  <rect x="10" y="60" width="60" height="20" rx="4" fill="#E5E7EB"/>
+  <rect x="10" y="90" width="60" height="20" rx="4" fill="#E5E7EB"/>
+  <rect x="10" y="120" width="60" height="20" rx="4" fill="#E5E7EB"/>
+  <rect x="10" y="150" width="60" height="20" rx="4" fill="#E5E7EB"/>
+  
+  <!-- Conteúdo principal -->
+  <rect x="100" y="60" width="280" height="40" rx="4" fill="#E5E7EB"/>
+  
+  <!-- Cards -->
+  <rect x="100" y="120" width="80" height="80" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <rect x="200" y="120" width="80" height="80" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <rect x="300" y="120" width="80" height="80" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+  
+  <!-- Gráfico -->
+  <rect x="100" y="220" width="180" height="60" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <path d="M110 260 L130 240 L150 250 L170 230 L190 245 L210 235 L230 220 L250 240 L270 230" stroke="#6366F1" stroke-width="2"/>
+  
+  <!-- Tabela -->
+  <rect x="300" y="220" width="80" height="60" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <line x1="300" y1="235" x2="380" y2="235" stroke="#E5E7EB"/>
+  <line x1="300" y1="250" x2="380" y2="250" stroke="#E5E7EB"/>
+  <line x1="300" y1="265" x2="380" y2="265" stroke="#E5E7EB"/>
+</svg> 

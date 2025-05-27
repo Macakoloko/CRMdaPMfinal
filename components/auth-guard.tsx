@@ -9,6 +9,12 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
+  // DESENVOLVIMENTO: Desabilitando temporariamente a proteção de autenticação
+  // Retorna diretamente os children sem verificar autenticação
+  return <>{children}</>
+  
+  // Código original comentado abaixo:
+  /*
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -35,4 +41,5 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   // Este return é para o TypeScript, não deve ser alcançado na prática
   return null
+  */
 } 

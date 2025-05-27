@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { PageLayout } from "@/components/page-layout"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -91,7 +92,7 @@ const clientFormSchema = z.object({
 
 type ClientFormValues = z.infer<typeof clientFormSchema>
 
-export default function ClientsPage() {
+function ClientsContent() {
   const { clients, addClient, updateClient, deleteClient, isLoading } = useClients()
   const [searchQuery, setSearchQuery] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -248,8 +249,8 @@ export default function ClientsPage() {
     <div className="container mx-auto p-4 pb-20">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button onClick={handleNewClient}>
-          <UserPlus className="mr-2 h-4 w-4" />
+        <Button onClick={handleNewClient} className="gap-2">
+          <UserPlus size={16} />
           Novo Cliente
         </Button>
       </div>
@@ -636,6 +637,14 @@ export default function ClientsPage() {
         <SupabaseClientStatus />
       </div>
     </div>
+  )
+}
+
+export default function ClientsPage() {
+  return (
+    <PageLayout>
+      <ClientsContent />
+    </PageLayout>
   )
 }
 

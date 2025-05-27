@@ -68,19 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    if (!error && data.user) {
-      try {
-        // Tentar criar um perfil de usuário na tabela profiles
-        await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            name,
-            email
-          });
-      } catch (profileError) {
+    if (!error) {
+      // Criar um perfil de usuário na tabela profiles
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user?.id,
+          name,
+          email
+        });
+      
+      if (profileError) {
         console.error('Erro ao criar perfil:', profileError);
-        // Continua mesmo com erro na criação do perfil
       }
     }
     
@@ -89,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    router.push('/auth/login');
+    router.push('/');
   };
 
   const resetPassword = async (email: string) => {

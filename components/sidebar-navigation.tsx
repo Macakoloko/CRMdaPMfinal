@@ -12,41 +12,49 @@ const navItems = [
     name: "Home",
     href: "/",
     icon: Home,
+    highlight: "menu-home",
   },
   {
     name: "Agenda",
     href: "/agendamentos",
     icon: Calendar,
+    highlight: "menu-agendamentos",
   },
   {
     name: "Financeiro",
     href: "/financeiro",
     icon: DollarSign,
+    highlight: "menu-financeiro",
   },
   {
     name: "Clientes",
     href: "/clientes",
     icon: Users,
+    highlight: "menu-clientes",
   },
   {
     name: "Chat",
     href: "/chat",
     icon: MessageCircle,
+    highlight: "menu-chat",
   },
   {
     name: "Produtos e Serviços",
     href: "/produtos",
     icon: Package,
+    highlight: "menu-produtos",
   },
   {
     name: "Automações",
     href: "/automacoes",
     icon: Zap,
+    highlight: "menu-automacoes",
   },
   {
     name: "Config",
     href: "/configuracoes",
     icon: Settings,
+    highlight: "menu-configuracoes",
   },
 ]
 
@@ -154,6 +162,7 @@ export function SidebarNavigation() {
                     ? "bg-primary text-primary-foreground" 
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
+                data-highlight={item.highlight}
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.name}</span>

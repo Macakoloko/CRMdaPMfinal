@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, ExternalLink, Calendar, Package, Users, DollarSign, CalendarPlus, CalendarSearch, ShoppingCart, Receipt, FileText, UserPlus, Plus, PackagePlus, Edit, ListChecks, Scissors, LogOut, User } from "lucide-react"
+import { Bell, ExternalLink, Calendar, Package, Users, DollarSign, CalendarPlus, CalendarSearch, ShoppingCart, Receipt, FileText, UserPlus, Plus, PackagePlus, Edit, ListChecks, Scissors, LogOut, User, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -28,6 +28,7 @@ import { NewSaleDialog } from "@/components/new-sale-dialog"
 import { NewServiceDialog } from "@/components/new-service-dialog"
 import { NewExpenseDialog } from "@/components/new-expense-dialog"
 import { useAuth } from "@/context/AuthContext"
+import { HelpButton } from "@/components/help-button"
 
 // Componente para o botão de acesso rápido
 function QuickAccessButton({ 
@@ -110,6 +111,16 @@ export function TopNavigation() {
             <h2 className="text-xl font-semibold md:hidden">CRM Salão</h2>
           </div>
           <div className="flex items-center gap-2">
+            <HelpButton />
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => {
+                window.open('/manual_usuario.html', '_blank');
+              }}
+            >
+              Manual
+            </Button>
             <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
               <DialogTrigger asChild>
                 <Button size="icon" variant="outline" className="relative">
@@ -161,7 +172,7 @@ export function TopNavigation() {
             <DailyClosing />
             <Dialog open={isQuickAccessOpen} onOpenChange={setIsQuickAccessOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button data-highlight="botao-acesso-rapido">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Acesso Rápido
                 </Button>

@@ -146,6 +146,13 @@ export default function Dashboard() {
           <h2 className="text-3xl font-bold tracking-tight">Painel de Controle</h2>
           <div className="flex items-center space-x-2">
             <span className="text-sm">Olá, {user?.user_metadata?.name || 'Usuário'}</span>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => window.open('/manual_usuario.html', '_blank')}
+            >
+              Manual do Usuário
+            </Button>
           </div>
         </div>
         
