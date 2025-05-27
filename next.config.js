@@ -116,6 +116,18 @@ const nextConfig = {
     
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/protected',
+        destination: '/protected_area',
+      },
+      {
+        source: '/protected/:path*',
+        destination: '/protected_area/:path*',
+      }
+    ];
+  },
 };
 
 // Try to import user config if it exists

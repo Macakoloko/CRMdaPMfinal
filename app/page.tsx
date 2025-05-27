@@ -1,6 +1,6 @@
 "use client"
 
-import Dashboard from "./(protected)/page"
+import Dashboard from "./protected_area/page"
 import { PageLayout } from "@/components/page-layout"
 import { TutorialButton } from "@/components/tutorial-button"
 
