@@ -1,18 +1,16 @@
-import React from 'react';
-import { canUseDom } from './dom';
+import { useLayoutEffect as useLayoutEffectReact, useEffect } from 'react';
+import canUseDom from './dom';
 
 /**
  * Este hook funciona como useLayoutEffect no navegador e como noop no servidor
  */
-const useLayoutEffect = typeof window !== 'undefined' 
-  ? React.useLayoutEffect 
-  : () => {};
+const useLayoutEffect = canUseDom() ? useLayoutEffectReact : useEffect;
 
 /**
  * Versão do useLayoutEffect que só dispara quando as dependências mudam
  * Similar ao useUpdateEffect, mas usando useLayoutEffect
  */
-export const useLayoutUpdateEffect: typeof React.useLayoutEffect = (callback, deps) => {
+export const useLayoutUpdateEffect: typeof useLayoutEffectReact = (callback, deps) => {
   const firstMountRef = React.useRef(true);
 
   useLayoutEffect(() => {

@@ -6,15 +6,12 @@ import React from 'react';
 /**
  * Verifica se o código está sendo executado em um ambiente com DOM disponível (navegador)
  */
-export const canUseDom = (): boolean => {
-  return !!(
-    typeof window !== 'undefined' &&
-    window.document &&
-    window.document.createElement
-  );
+const canUseDom = (): boolean => {
+  return !!(typeof window !== 'undefined' && 
+         window.document && 
+         window.document.createElement);
 };
 
-// Exportação padrão para compatibilidade com importações diferentes
 export default canUseDom;
 
 /**

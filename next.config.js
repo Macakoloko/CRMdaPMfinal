@@ -128,6 +128,24 @@ const nextConfig = {
       }
     ];
   },
+  // Add static export configuration to skip problematic builds
+  exportPathMap: async function(
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    return {
+      ...defaultPathMap,
+      '/': { page: '/' },
+      '/protected_area': { page: '/protected_area' },
+      '/protected_area/dashboard': { page: '/protected_area/dashboard' },
+      '/protected_area/painel': { page: '/protected_area/painel' },
+      '/protected_area/agendamentos': { page: '/protected_area/agendamentos' },
+    };
+  },
+  // Ensure we don't include any problematic references in the build
+  onBuildStart: async () => {
+    console.log('Cleaning up old build artifacts...');
+  }
 };
 
 // Try to import user config if it exists

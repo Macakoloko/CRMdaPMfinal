@@ -1,39 +1,29 @@
-import { canUseDom } from './dom';
+import canUseDom from './dom';
 
-const MARK_KEY = `rc-util-key`;
+const MARK_KEY = 'rc-util-key';
 
-function getMark({ mark }: { mark: string }) {
-  if (!mark) return null;
-  return `${MARK_KEY}-${mark}`;
-}
-
-export function injectCSS(css: string, options: { mark?: string } = {}) {
+function getContainer(): HTMLElement | null {
   if (!canUseDom()) {
     return null;
   }
 
-  const { mark } = options;
-  const styleId = getMark({ mark }) || '';
+  const container = document.querySelector('head');
+  return container || document.body;
+}
 
-  // If style already exists, do not create again
-  if (styleId && document.getElementById(styleId)) {
-    return document.getElementById(styleId);
+function injectCSS(css: string): HTMLStyleElement | null {
+  if (!canUseDom()) {
+    return null;
   }
 
   const styleNode = document.createElement('style');
-  styleNode.type = 'text/css';
+  styleNode.setAttribute(MARK_KEY, 'true');
+  styleNode.textContent = css;
 
-  if (styleId) {
-    styleNode.id = styleId;
+  const container = getContainer();
+  if (container) {
+    container.appendChild(styleNode);
   }
-
-  if (styleNode.styleSheet) {
-    (styleNode.styleSheet as any).cssText = css;
-  } else {
-    styleNode.innerHTML = css;
-  }
-
-  document.head.appendChild(styleNode);
 
   return styleNode;
 }
@@ -69,9 +59,7 @@ export function updateCSS(css: string, key: string, options: { mark?: string } =
       return styleNode;
     }
 
-    const newStyleNode = injectCSS(css, {
-      mark: mark || key,
-    });
+    const newStyleNode = injectCSS(css);
     
     if (newStyleNode) {
       newStyleNode.id = styleId;
@@ -84,4 +72,7 @@ export function updateCSS(css: string, key: string, options: { mark?: string } =
 }
 
 // Exportação padrão para compatibilidade
-export default updateCSS; 
+export default {
+  injectCSS,
+  getContainer,
+}; 

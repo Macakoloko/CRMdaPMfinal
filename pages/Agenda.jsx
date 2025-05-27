@@ -3,8 +3,12 @@ import { Calendar, Badge, Button, Row, Col, Select, Typography } from 'antd';
 import { LeftOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/pt-br';
+import weekday from 'dayjs/plugin/weekday';
 import NewAppointmentForm from '../components/NewAppointmentForm';
 // ... existing code ...
+
+// Add weekday plugin
+dayjs.extend(weekday);
 
 // Configurar dayjs para usar o locale pt-br
 dayjs.locale('pt-br');
@@ -39,6 +43,15 @@ const dateToDay = (date) => {
 const dayToDate = (day) => {
   return day.toDate();
 };
+
+// Adicionar método weekday se não existir
+if (!dayjs().weekday) {
+  dayjs.extend((_, Dayjs) => {
+    Dayjs.prototype.weekday = function() {
+      return this.day();
+    };
+  });
+}
 
 const Agenda = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
